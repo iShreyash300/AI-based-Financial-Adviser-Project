@@ -1,6 +1,5 @@
 -- =========================================
 -- AI FINANCIAL ADVISOR
--- FINAL CLEAN SEED (NO CURRENCY)
 -- 6-MONTH ML DATASET
 -- =========================================
 
