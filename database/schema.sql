@@ -20,8 +20,6 @@ CREATE TABLE users (
 
     password_hash VARCHAR(255) NOT NULL,
 
-    currency VARCHAR(10) DEFAULT 'INR',
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
