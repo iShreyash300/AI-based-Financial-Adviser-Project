@@ -1,5 +1,5 @@
 -- =========================================
--- AI FINANCIAL ADVISOR SCHEMA (IMPROVED FINAL)
+-- AI FINANCIAL ADVISOR SCHEMA (CLEAN FINAL)
 -- =========================================
 
 
@@ -91,7 +91,7 @@ FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
 
 -- =========================================
--- 4. EXPENSE CATEGORIES (AI LAYER IMPROVED)
+-- 4. EXPENSE CATEGORIES
 -- =========================================
 
 CREATE TABLE expense_categories (
@@ -109,7 +109,7 @@ CREATE TABLE expense_categories (
         )
     ),
 
-    keywords TEXT, -- AI matching layer
+    keywords TEXT,
     priority_weight INT DEFAULT 1,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -119,7 +119,6 @@ CREATE TABLE expense_categories (
 
 
 
--- AI SEARCH INDEX (IMPORTANT FIX)
 CREATE INDEX idx_expense_categories_keywords
 ON expense_categories USING GIN (
     to_tsvector('english', COALESCE(keywords, ''))
@@ -127,7 +126,6 @@ ON expense_categories USING GIN (
 
 
 
--- SEED DATA (UNCHANGED BUT CLEAN)
 INSERT INTO expense_categories (category_name, category_type, keywords, priority_weight)
 VALUES
 ('Ads Spend', 'variable', 'ads advertising campaign marketing meta google instagram', 2),
@@ -162,18 +160,11 @@ CREATE TABLE expenses (
         payment_method IN ('cash','upi','bank_transfer','credit_card','debit_card')
     ),
 
-    transaction_type VARCHAR(20) CHECK (
-        transaction_type IN ('essential','non_essential')
-    ),
-
     expense_date DATE NOT NULL,
 
-    is_recurring BOOLEAN DEFAULT FALSE,
     recurring_frequency VARCHAR(50) CHECK (
-        recurring_frequency IN ('daily','weekly','monthly','yearly')
+        recurring_frequency IN ('one_time','daily','weekly','monthly','yearly')
     ),
-
-    is_deleted BOOLEAN DEFAULT FALSE,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -201,8 +192,6 @@ CREATE TABLE revenue (
     amount DECIMAL(12,2) NOT NULL CHECK (amount >= 0),
     revenue_date DATE NOT NULL,
 
-    is_deleted BOOLEAN DEFAULT FALSE,
-
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -214,7 +203,7 @@ FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
 
 -- =========================================
--- 7. BUDGETS (IMPROVED UNIQUE LOGIC CLARITY)
+-- 7. BUDGETS
 -- =========================================
 
 CREATE TABLE budgets (
