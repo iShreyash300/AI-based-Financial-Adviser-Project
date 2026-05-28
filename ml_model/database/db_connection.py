@@ -25,3 +25,4 @@ def fetch_data(query):
         return None
 
 # CALL FUNCTION
+test_connection()
