@@ -27,6 +27,8 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState("");
+
+    // eslint-disable-next-line
     const [rememberMe, setRememberMe] = useState(false);
 
     useEffect(() => {
@@ -91,52 +93,70 @@ const LoginPage = () => {
 
         if (validateForm()) {
 
-            // REMEMBER ME FUNCTION
-            if (formData.remember) {
-                localStorage.setItem("email", formData.email);
-                localStorage.setItem("password", formData.password);
+            // static login for demo 
+
+            if (
+                formData.email === "admin@gmail.com" &&
+                formData.password === "admin@456"
+            ) {
+
+                // remember me functionality
+
+                if (formData.remember) {
+                    localStorage.setItem("email", formData.email);
+                    localStorage.setItem("password", formData.password);
+                } else {
+                    localStorage.removeItem("email");
+                    localStorage.removeItem("password");
+                }
+
+                // save login state
+
+                localStorage.setItem("isLogin", true);
+
+                // save user data in local storage
+
+                localStorage.setItem(
+                    "user",
+                    JSON.stringify({
+                        name: "Domo Admin",
+                        role: "Admin",
+                        email: formData.email,
+                    })
+                );
+
+                setSuccess("Login Successful!");
+
+                setErrors({});
+
+                // deshboard page nevigate 
+
+                setTimeout(() => {
+                    navigate("/dashboard");
+                }, 1500);
+
             } else {
-                localStorage.removeItem("email");
-                localStorage.removeItem("password");
+
+                setErrors({
+                    password: "Invalid Email or Password",
+                });
+
+                setSuccess("");
             }
-
-            console.log("Login Data:", formData);
-
-            setSuccess("Login Successful!");
-
-            // Reset Form
-            setFormData({
-                email: "",
-                password: "",
-                remember: false,
-            });
-
-            setErrors({});
-        } else {
-            setSuccess("");
         }
     };
 
     return (
-        <Box
-            sx={{
-                height: "100vh",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-            }}
-        >
+        <>
+
             <Box
 
                 sx={{
                     width: "100%",
-                    maxWidth: "1200px",
-                    height: {
-                        xs: "auto",
-                        md: "90vh", // FIX HEIGHT
-                    },
+                    // maxWidth: "1200px",
+                    height: "100vh",
                     bgcolor: "#fff",
-                    borderRadius: "25px",
+                    // borderRadius: "25px",
                     overflow: "hidden",
                     display: "flex",
                     flexDirection: { xs: "column", md: "row" },
@@ -150,7 +170,7 @@ const LoginPage = () => {
                         background:
                             "linear-gradient(180deg, #5B5FEF 0%, #7B61FF 100%)",
                         color: "#fff",
-                        p: { xs: 4, md: 9 },
+                        p: 3,
 
                         display: "flex",
                         flexDirection: "column",
@@ -209,10 +229,12 @@ const LoginPage = () => {
                     onSubmit={handleSubmit}
                     sx={{
                         flex: 1,
-                        p: { xs: 4, md: 7 },
+                        p: { xs: 3, md: 7 },
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "center",
+                        minHeight: { xs: "auto", md: "100%" },
+                        overflowY: { xs: "auto", md: "visible" },
                     }}
                 >
                     <Typography
@@ -326,7 +348,7 @@ const LoginPage = () => {
                             />
 
                             <Typography
-                            onClick={() => navigate("/forgetPassword")}
+                                onClick={() => navigate("/forgetPassword")}
                                 sx={{
                                     color: "#6C63FF",
                                     cursor: "pointer",
@@ -380,7 +402,8 @@ const LoginPage = () => {
                     </Stack>
                 </Box>
             </Box>
-        </Box>
+        </>
+
     );
 };
 

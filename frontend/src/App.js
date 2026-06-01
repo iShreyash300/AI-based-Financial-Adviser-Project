@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 
 import Layout from "./Components/layouts/index";
+// import Dashboard from "./Components/pages/deshboardPage";
 
 // ================= LAZY IMPORT =================
 
@@ -25,6 +26,9 @@ const LoginPage = lazy(() => import("./Components/pages/loginPage"));
 const SignupPage = lazy(() => import("./Components/pages/signupPage"));
 
 const ForgetPassword = lazy(() => import("./Components/pages/forgetPassword"));
+
+const Dashboard = lazy(() => import("./Components/pages/deshboardPage"));
+const ExpensesPage = lazy(() => import("./Components/pages/expenses"));
 
 // ================= LOADER =================
 
@@ -49,7 +53,8 @@ function App() {
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
+        background: "#f5f7fb",
       }}
     >
       <BrowserRouter>
@@ -107,6 +112,22 @@ function App() {
 
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgetPassword" element={<ForgetPassword />} />
+            <Route
+              path="/dashboard"
+              element={
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              }
+            />
+            <Route
+              path="/expenses"
+              element={
+                <Layout>
+                  <ExpensesPage />
+                </Layout>
+              }
+            />
           </Routes>
         </Suspense>
       </BrowserRouter>

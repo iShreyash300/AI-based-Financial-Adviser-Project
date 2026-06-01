@@ -1,3 +1,4 @@
+// eslint-disable-next-line 
 import React, { useState } from "react";
 
 import {
@@ -5,54 +6,74 @@ import {
     Avatar,
     Box,
     Button,
-    Drawer,
-    IconButton,
-    List,
-    ListItem,
-    ListItemText,
+    // Drawer,
+    // IconButton,
+    // List,
+    // ListItem,
+    // ListItemText,
     Stack,
     Toolbar,
     Typography,
 } from "@mui/material";
 
-import MenuIcon from "@mui/icons-material/Menu";
+// import MenuIcon from "@mui/icons-material/Menu";
 
 import { useNavigate } from "react-router-dom";
 
+import finlogo from "../../../src/assetes/Finlogo.png";
+import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+
+
 const Navbar = ({ isLogin }) => {
-    const [openDrawer, setOpenDrawer] =
-        useState(false);
+    // const [openDrawer, setOpenDrawer] =
+    //     useState(false);
 
     const navigate = useNavigate();
 
+    const handleLogout = () => {
+
+        localStorage.removeItem("isLogin");
+
+        localStorage.removeItem("user");
+
+        navigate("/");
+
+        window.location.reload();
+    };
+
     // NAV ITEMS
 
-    const navItems = [
-        {
-            name: "Home",
-            path: "/",
-        },
-        {
-            name: "About",
-            path: "/about",
-        },
-        {
-            name: "Services",
-            path: "/services",
-        },
-        {
-            name: "Features",
-            path: "/features",
-        },
-    ];
+    // const navItems = [
+    //     {
+    //         name: "Home",
+    //         path: "/",
+    //     },
+    //     {
+    //         name: "About",
+    //         path: "/about",
+    //     },
+    //     {
+    //         name: "Services",
+    //         path: "/services",
+    //     },
+    //     {
+    //         name: "Features",
+    //         path: "/features",
+    //     },
+    // ];
 
     // HANDLE NAVIGATION
 
-    const handleNavigate = (path) => {
-        navigate(path);
+    // const handleNavigate = (path) => {
+    //     navigate(path);
 
-        setOpenDrawer(false);
-    };
+    //     // setOpenDrawer(false);
+    // };
+
+    const user = JSON.parse(
+        localStorage.getItem("user")
+    );
 
     return (
         <>
@@ -62,10 +83,10 @@ const Navbar = ({ isLogin }) => {
 
             {!isLogin && (
                 <AppBar
-                    position="static"
+
                     elevation={0}
                     sx={{
-                        zIndex: 999,
+                        // position: "fixed",
                         background: "#fff",
                         borderBottom: "1px solid #eee",
                         px: {
@@ -77,6 +98,7 @@ const Navbar = ({ isLogin }) => {
                 >
                     <Toolbar
                         sx={{
+
                             display: "flex",
                             justifyContent:
                                 "space-between",
@@ -92,7 +114,7 @@ const Navbar = ({ isLogin }) => {
                         >
                             {/* MOBILE MENU */}
 
-                            <IconButton
+                            {/* <IconButton
                                 sx={{
                                     display: {
                                         xs: "flex",
@@ -104,7 +126,7 @@ const Navbar = ({ isLogin }) => {
                                 }
                             >
                                 <MenuIcon />
-                            </IconButton>
+                            </IconButton> */}
 
                             {/* LOGO */}
 
@@ -124,7 +146,7 @@ const Navbar = ({ isLogin }) => {
 
                             {/* DESKTOP MENU */}
 
-                            <Stack
+                            {/* <Stack
                                 direction="row"
                                 spacing={3}
                                 sx={{
@@ -158,7 +180,7 @@ const Navbar = ({ isLogin }) => {
                                         {item.name}
                                     </Typography>
                                 ))}
-                            </Stack>
+                            </Stack> */}
                         </Stack>
 
                         {/* RIGHT SIDE */}
@@ -166,12 +188,12 @@ const Navbar = ({ isLogin }) => {
                         <Stack
                             direction="row"
                             spacing={2}
-                            alignItems="center"
+                            sx={{ justifyContent: "center", alignItems: "center" }}
                         >
                             {/* LOGIN BUTTON */}
 
                             <Button
-                                variant="contained"
+                                variant="outlined"
                                 onClick={() =>
                                     navigate("/login")
                                 }
@@ -179,8 +201,35 @@ const Navbar = ({ isLogin }) => {
                                     textTransform: "none",
                                     borderRadius: "10px",
                                     px: 3,
-                                    height: "45px",
+                                    height: "38px",
                                     fontWeight: 700,
+                                    // background:
+                                    //     "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)",
+
+                                    // "&:hover": {
+                                    //     background:
+                                    //         "linear-gradient(90deg, #4D52E8 0%, #694BFF 100%)",
+                                    // },
+                                }}
+                            >
+                                Login
+                            </Button>
+                            <Button
+                                variant="contained"
+                                onClick={() =>
+                                    navigate("/signup")
+                                }
+                                sx={{
+
+                                    display: { xs: "none", md: "flex" },
+                                    textTransform: "none",
+                                    borderRadius: "24px",
+                                    px: 3,
+                                    height: "33px",
+                                    width: "150px",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+
                                     background:
                                         "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)",
 
@@ -190,7 +239,7 @@ const Navbar = ({ isLogin }) => {
                                     },
                                 }}
                             >
-                                Login
+                                Get Started   <ArrowRightAltIcon />
                             </Button>
                         </Stack>
                     </Toolbar>
@@ -208,11 +257,17 @@ const Navbar = ({ isLogin }) => {
                     sx={{
                         background: "#fff",
                         borderBottom: "1px solid #eee",
-                        px: 3,
+                        px: {
+                            xs: "auto",
+                            md: 3,
+                        },
+                        position: { md: "sticky", xs: "fixed" },
+                        zIndex: "1"
                     }}
                 >
                     <Toolbar
                         sx={{
+
                             display: "flex",
                             justifyContent:
                                 "space-between",
@@ -221,15 +276,18 @@ const Navbar = ({ isLogin }) => {
                     >
                         {/* TITLE */}
 
-                        <Typography
+                        {/* <Typography
                             sx={{
                                 fontSize: "1.5rem",
                                 fontWeight: 800,
                                 color: "#5B5FEF",
                             }}
                         >
-                            Financial Dashboard
-                        </Typography>
+                            FinAI Dashboard
+                        </Typography> */}
+                        <Stack sx={{ justifyContent: "center", alignItems: "center" }}>
+                            <img src={finlogo} alt="FinAI Logo" style={{ width: "100px", height: "auto" }} />
+                        </Stack>
 
                         {/* USER PROFILE */}
 
@@ -245,10 +303,10 @@ const Navbar = ({ isLogin }) => {
                                     height: 42,
                                 }}
                             >
-                                R
+                                {user?.name?.charAt(0)}
                             </Avatar>
 
-                            <Box>
+                            <Box sx={{ display: { xs: "none", md: "block" } }}>
                                 <Typography
                                     sx={{
                                         fontSize: "14px",
@@ -256,7 +314,7 @@ const Navbar = ({ isLogin }) => {
                                         color: "#111",
                                     }}
                                 >
-                                    Rishil Patel
+                                    {user?.name}
                                 </Typography>
 
                                 <Typography
@@ -265,9 +323,25 @@ const Navbar = ({ isLogin }) => {
                                         color: "#777",
                                     }}
                                 >
-                                    Admin
+                                    {user?.role}
                                 </Typography>
                             </Box>
+
+                            {/* LOGOUT BUTTON */}
+
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={handleLogout}
+                                sx={{
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: "24px",
+                                    width: "10px",
+                                }}
+                            >
+                                <LogoutOutlinedIcon />
+                            </Button>
                         </Stack>
                     </Toolbar>
                 </AppBar>
@@ -275,62 +349,66 @@ const Navbar = ({ isLogin }) => {
 
             {/* ================= MOBILE DRAWER ================= */}
 
-            <Drawer
-                anchor="left"
-                open={openDrawer}
-                onClose={() =>
-                    setOpenDrawer(false)
-                }
-            >
-                <Box
-                    sx={{
-                        width: 250,
-                        p: 2,
-                    }}
-                >
-                    {/* LOGO */}
 
-                    <Typography
-                        sx={{
-                            fontSize: "1.5rem",
-                            fontWeight: 800,
-                            color: "#5B5FEF",
-                            mb: 3,
-                        }}
-                    >
-                        FinAI
-                    </Typography>
-
-                    {/* MENU */}
-
-                    <List>
-                        {navItems.map((item) => (
-                            <ListItem
-                                button
-                                key={item.name}
-                                onClick={() =>
-                                    handleNavigate(
-                                        item.path
-                                    )
-                                }
-                                sx={{
-                                    borderRadius: "10px",
-
-                                    "&:hover": {
-                                        background: "#f5f5ff",
-                                    },
-                                }}
-                            >
-                                <ListItemText
-                                    primary={item.name}
-                                />
-                            </ListItem>
-                        ))}
-                    </List>
-                </Box>
-            </Drawer>
         </>
     );
 };
 
 export default Navbar;
+
+
+
+//  <Drawer
+//                 anchor="left"
+//                 open={openDrawer}
+//                 onClose={() =>
+//                     setOpenDrawer(false)
+//                 }
+//             >
+//                 <Box
+//                     sx={{
+//                         width: 250,
+//                         p: 2,
+//                     }}
+//                 >
+//                     {/* LOGO */}
+
+//                     <Typography
+//                         sx={{
+//                             fontSize: "1.5rem",
+//                             fontWeight: 800,
+//                             color: "#5B5FEF",
+//                             mb: 3,
+//                         }}
+//                     >
+//                         FinAI
+//                     </Typography>
+
+//                     {/* MENU */}
+
+//                     <List>
+//                         {navItems.map((item) => (
+//                             <ListItem
+//                                 button
+//                                 key={item.name}
+//                                 onClick={() =>
+//                                     handleNavigate(
+//                                         item.path
+//                                     )
+//                                 }
+//                                 sx={{
+//                                     borderRadius: "10px",
+
+//                                     "&:hover": {
+//                                         background: "#f5f5ff",
+//                                     },
+//                                 }}
+//                             >
+//                                 <ListItemText
+//                                     primary={item.name}
+//                                 />
+//                             </ListItem>
+//                         ))}
+//                     </List>
+//                 </Box>
+//             </Drawer>

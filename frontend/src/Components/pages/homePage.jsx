@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import Linerchart from "../Charts/RevenueChart"
 
 
 import {
@@ -33,7 +34,7 @@ const HomePage = () => {
             icon: <TrendingUpOutlinedIcon />,
         },
         {
-            title: "AI Insights",
+            title: "AI Insights Analysis",
             icon: <InsightsOutlinedIcon />,
         },
         {
@@ -43,7 +44,8 @@ const HomePage = () => {
     ];
 
     return (
-        <Box sx={{ bgcolor: "#f5f7ff" }}>
+        <Box sx={{ bgcolor: "#f5f7ff", p: 5 }}>
+            {/* <Box sx={{ bgcolor: "#060606" }}> */}
             {/* HERO SECTION */}
 
             <Box
@@ -51,31 +53,32 @@ const HomePage = () => {
                     minHeight: "100vh",
                     display: "flex",
                     alignItems: "center",
-                    px: { xs: 3, md: 10 },
-                    py: 5,
+                    // px: { xs: 3, md: 10 },
+                    // py: 5,
                 }}
             >
-                <Grid container spacing={5} alignItems="center">
+                <Stack spacing={5} alignItems="center" direction={{ xs: "column", sm: "row" }}>
                     {/* LEFT */}
 
-                    <Grid item xs={12} md={6}>
+                    <Stack sx={{ width: { xs: "100%", md: "50%" } }} direction={{ xs: "column", sm: "column" }} spacing={5} alignItems="center">
                         <Typography
                             sx={{
                                 fontSize: {
-                                    xs: "2.5rem",
-                                    md: "4.5rem",
+                                    xs: "26px",
+                                    md: "3.75rem",
                                 },
                                 fontWeight: 800,
                                 lineHeight: 1.1,
                                 color: "#111",
                             }}
                         >
-                            AI-Based
+                            AI-Powered Financial
+                            Intelligence for
                             <br />
-                            Financial
+
                             <span style={{ color: "#6C63FF" }}>
                                 {" "}
-                                Advisor
+                                Your Business
                             </span>
                         </Typography>
 
@@ -91,80 +94,46 @@ const HomePage = () => {
                                 maxWidth: "550px",
                             }}
                         >
-                            Smart business finance system
-                            that tracks expenses, predicts
-                            revenue, analyzes financial
-                            patterns, and provides AI-powered
-                            financial insights.
+                            Track expenses, forecast revenue, monitor financial health, and get AI recommendations all in one beautifully simple workspace.
                         </Typography>
 
-                        <Stack
-                            direction={{
-                                xs: "column",
-                                sm: "row",
+
+                        <Button
+                            variant="contained"
+                            sx={{
+                                width: { md: "200px", xs: "100%" },
+                                height: "45px",
+                                px: 4,
+                                borderRadius: "14px",
+                                textTransform: "none",
+                                fontSize: "16px",
+                                fontWeight: 700,
+                                background:
+                                    "linear-gradient(90deg,#5B5FEF,#7B61FF)",
                             }}
-                            spacing={2}
-                            mt={4}
+                            onClick={() =>
+                                navigate("/signup")
+                            }
                         >
-                            <Button
-                                variant="contained"
-                                sx={{
-                                    height: "52px",
-                                    px: 4,
-                                    borderRadius: "14px",
-                                    textTransform: "none",
-                                    fontSize: "16px",
-                                    fontWeight: 700,
-                                    background:
-                                        "linear-gradient(90deg,#5B5FEF,#7B61FF)",
-                                }}
-                                onClick={() =>
-                                    navigate("/signup")
-                                }
-                            >
-                                Register Now
-                            </Button>
-
-                            <Button
-                                variant="outlined"
-                                sx={{
-                                    height: "52px",
-                                    px: 4,
-                                    borderRadius: "14px",
-                                    textTransform: "none",
-                                    fontSize: "16px",
-                                    fontWeight: 700,
-                                    borderColor: "#6C63FF",
-                                    color: "#6C63FF",
-                                }}
-                            >
-                                Sign In
-                            </Button>
-                        </Stack>
-                    </Grid>
-
+                            Register Now
+                        </Button>
+                    </Stack>
+                    <Stack sx={{ width: { xs: "100%", md: "50%" } }} direction={{ xs: "column", sm: "column" }} spacing={5} alignItems="center">
+                        <Linerchart />
+                    </Stack>
                     {/* RIGHT */}
 
-                    <Grid item xs={12} md={6}>
-                        <Box
-                            component="img"
-                            src="https://cdn-icons-png.flaticon.com/512/4727/4727496.png"
-                            alt="finance"
-                            sx={{
-                                width: "50%",
-                                maxWidth: "500px",
-                                display: "block",
-                                mx: "auto",
-                            }}
-                        />
-                    </Grid>
-                </Grid>
+
+                </Stack>
             </Box>
 
             {/* FEATURES */}
 
             <Box
                 sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
                     px: { xs: 3, md: 10 },
                     py: 8,
                 }}
@@ -172,7 +141,7 @@ const HomePage = () => {
                 <Typography
                     textAlign="center"
                     sx={{
-                        fontSize: "2.5rem",
+                        fontSize: { md: "2.5rem", xs: "2rem" },
                         fontWeight: 800,
                         mb: 6,
                     }}
@@ -180,9 +149,9 @@ const HomePage = () => {
                     Main Features
                 </Typography>
 
-                <Grid container spacing={3}>
+                <Grid sx={{ justifyContent: "center" }} container spacing={3}>
                     {features.map((item, index) => (
-                        <Grid item xs={12} sm={6} md={3} key={index}>
+                        <Grid sx={{ width: { md: "200px", xs: "100%" }, }} item xs={12} sm={6} md={3} key={index}>
                             <Card
                                 sx={{
                                     borderRadius: "20px",
@@ -190,6 +159,10 @@ const HomePage = () => {
                                     boxShadow:
                                         "0 10px 30px rgba(0,0,0,0.08)",
                                     textAlign: "center",
+                                    height: { md: "35vh", xs: "auto" },
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "center",
                                 }}
                             >
                                 <CardContent>

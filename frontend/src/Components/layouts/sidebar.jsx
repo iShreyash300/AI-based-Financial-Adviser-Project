@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   Avatar,
   Box,
   Divider,
-  IconButton,
   Stack,
   Typography,
 } from "@mui/material";
@@ -14,51 +14,103 @@ import AnalyticsOutlinedIcon from "@mui/icons-material/AnalyticsOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import MenuIcon from "@mui/icons-material/Menu";
+
+const menuItems = [
+  {
+    name: "Dashboard",
+    icon: <DashboardOutlinedIcon />,
+    path: "/dashboard",
+  },
+  {
+    name: "Expenses",
+    icon: <AnalyticsOutlinedIcon />,
+    path: "/expenses",
+  },
+  {
+    name: "Budget",
+    icon: <ReceiptLongOutlinedIcon />,
+  },
+  {
+    name: "Revenues",
+    icon: <SettingsOutlinedIcon />,
+  },
+  {
+    name: "Predictions",
+    icon: <SettingsOutlinedIcon />,
+  },
+  {
+    name: "Health score",
+    icon: <SettingsOutlinedIcon />,
+  },
+  {
+    name: "Growth Plans",
+    icon: <SettingsOutlinedIcon />,
+  },
+  {
+    name: "Reports",
+    icon: <SettingsOutlinedIcon />,
+  },
+];
 
 const Sidebar = () => {
-  const [active, setActive] =
-    useState("Dashboard");
+  const [active, setActive] = useState("Dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const menuItems = [
-    {
-      name: "Dashboard",
-      icon: <DashboardOutlinedIcon />,
-    },
-    {
-      name: "Analytics",
-      icon: <AnalyticsOutlinedIcon />,
-    },
-    {
-      name: "Reports",
-      icon: <ReceiptLongOutlinedIcon />,
-    },
-    {
-      name: "Settings",
-      icon: <SettingsOutlinedIcon />,
-    },
-  ];
+  useEffect(() => {
+    const current = menuItems.find(
+      (item) => item.path === location.pathname
+    );
+
+    if (current) {
+      setActive(current.name);
+    }
+  }, [location.pathname]);
 
   return (
     <Box
       sx={{
         width: {
-          xs: "80px",
+          xs: "100%",
           md: "260px",
         },
-        height: "100vh",
-        background: "#fff",
-        borderRight: "1px solid #eee",
+        minHeight: "100%",
+        overflowY: "visible",
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        p: 2,
+        flexDirection: {
+          xs: "row",
+          md: "column",
+        },
+        justifyContent: {
+          xs: "space-around",
+          md: "space-between",
+        },
+        alignItems: {
+          xs: "center",
+          md: "stretch",
+        },
+        p: {
+          xs: 1,
+          md: 2,
+        },
         transition: "0.3s",
+        background: {
+          xs: "#2a2d3a",
+          md: "#fff",
+        },
+        borderTop: {
+          xs: "1px solid #3a3d4a",
+          md: "none",
+        },
+        borderRight: {
+          xs: "none",
+          md: "1px solid #eee",
+        },
       }}
     >
-      {/* TOP SECTION */}
+      {/* TOP SECTION - DESKTOP ONLY */}
 
-      <Box>
+      <Box sx={{ display: { xs: "none", md: "block" } }}>
         {/* LOGO */}
 
         <Stack
@@ -90,10 +142,6 @@ const Sidebar = () => {
 
           <Typography
             sx={{
-              display: {
-                xs: "none",
-                md: "block",
-              },
               fontSize: "1.4rem",
               fontWeight: 800,
               color: "#111",
@@ -102,65 +150,106 @@ const Sidebar = () => {
             FinAI
           </Typography>
         </Stack>
+      </Box>
 
-        {/* MENU */}
+      {/* MENU */}
 
-        <Stack spacing={1}>
-          {menuItems.map((item) => (
-            <Stack
-              key={item.name}
-              direction="row"
-              alignItems="center"
-              spacing={2}
-              onClick={() =>
-                setActive(item.name)
+      <Stack
+        direction={{ xs: "row", md: "column" }}
+        spacing={{ xs: 0, md: 1 }}
+        sx={{
+          width: "100%",
+          flex: { xs: 1, md: "auto" },
+          justifyContent: { xs: "space-around", md: "flex-start" },
+        }}
+      >
+        {menuItems.map((item) => (
+          <Stack
+            key={item.name}
+            direction={{ xs: "column", md: "row" }}
+            alignItems="center"
+            spacing={{ xs: 3, md: 2 }}
+            onClick={() => {
+              if (item.path) {
+                navigate(item.path);
               }
-              sx={{
-                p: 1.5,
-                borderRadius: "14px",
-                cursor: "pointer",
-                transition: "0.3s",
+              setActive(item.name);
+            }}
+            sx={{
+              width: "100%",
+              py: 1.5,
+              px: {
+                xs: 0,
+                md: 2,
+              },
+              borderRadius: "14px",
+              cursor: "pointer",
+              transition: "0.3s",
+              justifyContent: { xs: "center", md: "flex-start" },
 
+              background:
+                active === item.name
+                  ? {
+                    xs: "transparent",
+                    md: "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)",
+                  }
+                  : "transparent",
+
+              color:
+                active === item.name
+                  ? {
+                    xs: "#7B61FF",
+                    md: "#fff",
+                  }
+                  : {
+                    xs: "#999",
+                    md: "#555",
+                  },
+
+              "&:hover": {
                 background:
                   active === item.name
-                    ? "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)"
-                    : "transparent",
-
-                color:
-                  active === item.name
-                    ? "#fff"
-                    : "#555",
-
-                "&:hover": {
-                  background:
-                    active === item.name
-                      ? "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)"
-                      : "#f5f5ff",
+                    ? {
+                      xs: "transparent",
+                      md: "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)",
+                    }
+                    : { xs: "transparent", md: "#f5f5ff" },
+              },
+            }}
+          >
+            <Box
+              sx={{
+                fontSize: {
+                  xs: "24px",
+                  md: "20px",
                 },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {item.icon}
+            </Box>
 
-              <Typography
-                sx={{
-                  display: {
-                    xs: "none",
-                    md: "block",
-                  },
-                  fontSize: "15px",
-                  fontWeight: 600,
-                }}
-              >
-                {item.name}
-              </Typography>
-            </Stack>
-          ))}
-        </Stack>
-      </Box>
+            <Typography
+              sx={{
+                display: {
+                  xs: "none",
+                  md: "block",
+                },
+                fontSize: "15px",
+                fontWeight: 600,
+              }}
+            >
+              {item.name}
+            </Typography>
+          </Stack>
+        ))}
+      </Stack>
 
-      {/* BOTTOM SECTION */}
+      {/* BOTTOM SECTION - DESKTOP ONLY */}
 
-      <Box>
+      <Box sx={{ display: { xs: "none", md: "block" } }}>
         <Divider sx={{ mb: 2 }} />
 
         {/* USER */}
@@ -187,14 +276,7 @@ const Sidebar = () => {
             R
           </Avatar>
 
-          <Box
-            sx={{
-              display: {
-                xs: "none",
-                md: "block",
-              },
-            }}
-          >
+          <Box>
             <Typography
               sx={{
                 fontSize: "14px",
@@ -239,10 +321,6 @@ const Sidebar = () => {
 
           <Typography
             sx={{
-              display: {
-                xs: "none",
-                md: "block",
-              },
               fontSize: "15px",
               fontWeight: 600,
             }}
