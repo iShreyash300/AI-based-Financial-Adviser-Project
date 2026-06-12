@@ -1,6 +1,6 @@
 import sys
-import numpy as np
 import pandas as pd
+import numpy as np
 import joblib
 
 from sklearn.ensemble import RandomForestRegressor
@@ -9,18 +9,24 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from ml_model.database.db_connection import fetch_data
 
-
 # -------------------------
 # === Fetch Data ===
 # -------------------------
 
-query = "SELECT * FROM expenses;"
+# -- query
+
+query = """
+SELECT *
+FROM revenue;
+"""
 
 try:
     df_raw = fetch_data(query)
 except Exception as e:
-    print(f"[ERROR] Database fetch failed: {e}")
+    print(f"[ERROR] Failed to fetch data: {e}")
     sys.exit(1)
+
+# -- validate
 
 if df_raw is None or df_raw.empty:
     print("[WARNING] No data found.")
@@ -28,9 +34,8 @@ if df_raw is None or df_raw.empty:
 
 
 # -------------------------
-# === Prepare Data ===
+# === Working Copy ===
 # -------------------------
-# -- working copy
 
 try:
     df = df_raw.copy()
@@ -39,20 +44,26 @@ except Exception as e:
     print(f"[ERROR] Failed to copy dataframe: {e}")
     sys.exit(1)
 
-# -- date features
+
+# -------------------------
+# === Date Features ===
+# -------------------------
 
 try:
-    expense_date = pd.to_datetime(df["expense_date"])
-    df["month"] = expense_date.dt.month
-    df["year"] = expense_date.dt.year
+    revenue_date = pd.to_datetime(df["revenue_date"])
+    df["month"] = revenue_date.dt.month
+    df["year"] = revenue_date.dt.year
 except KeyError:
-    print("[ERROR] Column 'expense_date' not found.")
+    print("[ERROR] Column 'revenue_date' not found.")
     sys.exit(1)
 except Exception as e:
     print(f"[ERROR] Date parsing failed: {e}")
     sys.exit(1)
 
-# -- monthly aggregation
+
+# -------------------------
+# === Monthly Aggregation ===
+# -------------------------
 
 try:
     monthly_df = (
@@ -74,6 +85,7 @@ except Exception as e:
 # -------------------------
 # === Train Model ===
 # -------------------------
+
 # -- features & target
 
 try:
@@ -103,7 +115,10 @@ except Exception as e:
 
 try:
     model = RandomForestRegressor(
-        n_estimators=300, max_depth=10, random_state=42, n_jobs=-1
+        n_estimators=300,
+        max_depth=10,
+        random_state=42,
+        n_jobs=-1
     )
     model.fit(X_train, y_train)
 except Exception as e:
@@ -114,6 +129,7 @@ except Exception as e:
 # -------------------------
 # === Evaluate Model ===
 # -------------------------
+
 # -- predictions
 
 try:
@@ -125,10 +141,11 @@ except Exception as e:
 # -- metrics
 
 try:
-    mae  = mean_absolute_error(y_test, predictions)
+    mae = mean_absolute_error(y_test, predictions)
     rmse = np.sqrt(mean_squared_error(y_test, predictions))
-    r2   = r2_score(y_test, predictions)
-    print(f"\n===== MODEL EVALUATION =====")
+    r2 = r2_score(y_test, predictions)
+
+    print("\n===== MODEL EVALUATION =====")
     print(f"MAE  : {mae:.2f}")
     print(f"RMSE : {rmse:.2f}")
     print(f"R²   : {r2:.4f}")
@@ -142,10 +159,9 @@ except Exception as e:
 # -------------------------
 
 # try:
-#     joblib.dump(model, "ml_model/trained_models/expense_prediction_model.pkl")
+#     joblib.dump(model,"ml_model/trained_models/revenue_prediction_model.pkl")
 #     print("\nModel saved successfully.")
 # except Exception as e:
 #     print(f"[ERROR] Failed to save model: {e}")
 #     sys.exit(1)
-
 print("\nModel saved successfully.")
