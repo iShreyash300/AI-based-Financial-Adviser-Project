@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import joblib
 
-from sklearn.ensemble import RandomForestRegressor
+# from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -114,13 +115,23 @@ except Exception as e:
 # -- fit random forest
 
 try:
-    model = RandomForestRegressor(
-        n_estimators=300,
-        max_depth=10,
-        random_state=42,
-        n_jobs=-1
-    )
-    model.fit(X_train, y_train)
+    # model = RandomForestRegressor(
+    #     n_estimators=300,
+    #     max_depth=10,
+    #     random_state=42,
+    #     n_jobs=-1
+    # )
+    # model.fit(X_train, y_train)
+        model = XGBRegressor(
+            n_estimators=300,
+            learning_rate=0.05,
+            max_depth=6,
+            subsample=0.8,
+            colsample_bytree=0.8,
+            random_state=42,
+            n_jobs=-1
+        )
+        model.fit(X_train, y_train)
 except Exception as e:
     print(f"[ERROR] Model training failed: {e}")
     sys.exit(1)
