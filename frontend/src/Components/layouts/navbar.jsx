@@ -317,7 +317,8 @@ const Navbar = ({ isLogin }) => {
                         <Stack
                             direction="row"
                             spacing={1.5}
-                            sx={{ justifyContent: "center", alignItems: "center" }}
+                            sx={{ justifyContent: "center", alignItems: "center", cursor: "pointer" }}
+                            onClick={() => navigate("/profile")}
                         >
                             <Avatar
                                 sx={{

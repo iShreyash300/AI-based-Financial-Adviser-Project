@@ -4,7 +4,6 @@ import {
     Box,
     Paper,
     Typography,
-    Grid,
     Stack,
     Button,
     LinearProgress,
@@ -209,14 +208,15 @@ const BudgetPage = () => {
 
             {/* CARDS */}
 
-            <Grid container spacing={3}
+            <Stack
                 sx={{
                     flexDirection: { md: "row", xs: "column" },
                     justifyContent: "space-between",
                     alignItems: "center",
-                    p: 3
+                    p: 3,
+                    gap: "10px"
                 }} >
-                <Grid item xs={12} md={4} sx={{ width: { md: "auto", xs: "100%" } }}>
+                <Stack sx={{ width: "100%" }}>
                     <Paper sx={cardStyle}>
                         <Typography>
                             Total Budget
@@ -227,9 +227,9 @@ const BudgetPage = () => {
                             {totalBudget.toLocaleString()}
                         </Typography>
                     </Paper>
-                </Grid>
+                </Stack>
 
-                <Grid item xs={12} md={4} sx={{ width: { md: "auto", xs: "100%" } }}>
+                <Stack sx={{ width: "100%" }}>
                     <Paper sx={cardStyle}>
                         <Typography>
                             Total Spent
@@ -240,9 +240,9 @@ const BudgetPage = () => {
                             {totalSpent.toLocaleString()}
                         </Typography>
                     </Paper>
-                </Grid>
+                </Stack>
 
-                <Grid item xs={12} md={4} sx={{ width: { md: "auto", xs: "100%" } }}>
+                <Stack sx={{ width: "100%" }}>
                     <Paper sx={cardStyle}>
                         <Typography>
                             Remaining
@@ -253,9 +253,9 @@ const BudgetPage = () => {
                             {remaining.toLocaleString()}
                         </Typography>
                     </Paper>
-                </Grid>
+                </Stack>
 
-                <Grid item xs={12} md={4} sx={{ width: { md: "auto", xs: "100%" } }}>
+                <Stack sx={{ width: "100%" }}>
                     <Paper sx={cardStyle}>
                         <Typography>
                             Utilization
@@ -265,15 +265,14 @@ const BudgetPage = () => {
                             {utilization}%
                         </Typography>
                     </Paper>
-                </Grid>
-            </Grid>
+                </Stack>
+            </Stack>
 
             {/* BUDGET LIST */}
             <Stack sx={{ p: 3 }} >
 
                 <Paper
                     sx={{
-                        mt: 4,
                         p: 3,
                         borderRadius: "16px",
                     }}

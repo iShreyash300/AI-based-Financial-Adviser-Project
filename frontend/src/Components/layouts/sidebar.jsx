@@ -13,6 +13,7 @@ import {
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import AnalyticsOutlinedIcon from "@mui/icons-material/AnalyticsOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+// import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
@@ -282,10 +283,12 @@ const Sidebar = () => {
         <Stack
           direction="row"
           spacing={1.5}
+          onClick={() => navigate("/profile")}
           sx={{
             alignItems: "center",
             p: 1,
             borderRadius: "12px",
+            cursor: "pointer",
             "&:hover": {
               background: "#f8f8ff",
             },

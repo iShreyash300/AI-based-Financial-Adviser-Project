@@ -154,7 +154,7 @@ const LoginPage = () => {
         // Password Validation
         if (!formData.password) {
             tempErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
+        } else if (formData.password.length < 2) {
             tempErrors.password = "Password must be at least 6 characters";
         }
 

@@ -16,12 +16,13 @@ const CustomCard = ({
 }) => {
   return (
     <Card
+
       sx={{
         borderRadius: "16px",
         boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         p: 1,
-        minWidth: 220,
-        height: "25vh",
+        minWidth: 285,
+        height: "auto",
       }}
     >
       <CardContent>

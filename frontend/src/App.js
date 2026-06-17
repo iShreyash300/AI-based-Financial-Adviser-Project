@@ -34,6 +34,7 @@ const Dashboard = lazy(() => import("./Components/pages/deshboardPage"));
 const ExpensesPage = lazy(() => import("./Components/pages/expenses"));
 
 const BudgetPage = lazy(() => import("./Components/pages/budget"));
+const ProfilePage = lazy(() => import("./Components/pages/profilePage"));
 
 // ================= LOADER =================
 
@@ -128,11 +129,23 @@ function App() {
               }
             />
             <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProfilePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/expenses"
               element={
-                <Layout>
-                  <ExpensesPage />
-                </Layout>
+                <ProtectedRoute>
+                  <Layout>
+                    <ExpensesPage />
+                  </Layout>
+                </ProtectedRoute>
               }
             />
             <Route

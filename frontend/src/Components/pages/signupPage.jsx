@@ -39,7 +39,8 @@ const SignupPage = () => {
 
 
     const [formData, setFormData] = useState({
-        fullName: "",
+        business_name: "",
+        owner_name: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -66,9 +67,13 @@ const SignupPage = () => {
     const validateForm = () => {
         let tempErrors = {};
 
-        if (!formData.fullName) {
-            tempErrors.fullName =
+        if (!formData.business_name) {
+            tempErrors.business_name =
                 "Full name is required";
+        }
+        if (!formData.owner_name) {
+            tempErrors.owner_name =
+                "owner_name is required";
         }
 
         if (!formData.email) {
@@ -125,16 +130,17 @@ const SignupPage = () => {
             const response = await axios.post(
                 "http://localhost:5000/api/auth/signup",
                 {
-                    name: formData.fullName,
+                    business_name: formData.business_name,
+                    owner_name: formData.owner_name,
                     email: formData.email,
                     password: formData.password,
                 }
             );
-
             setSuccess(response.data.message);
 
             setFormData({
-                fullName: "",
+                business_name: "",
+                owner_name: "",
                 email: "",
                 password: "",
                 confirmPassword: "",
@@ -365,12 +371,34 @@ const SignupPage = () => {
 
                         <TextField
                             fullWidth
-                            name="fullName"
+                            name="business_name"
                             placeholder="Enter your full name"
-                            value={formData.fullName}
+                            value={formData.business_name}
                             onChange={handleChange}
-                            error={!!errors.fullName}
-                            helperText={errors.fullName}
+                            error={!!errors.business_name}
+                            helperText={errors.business_name}
+                            sx={inputStyle}
+                        />
+                        <Typography
+                            sx={{
+                                fontSize: "14px",
+                                mb: 0.5,
+                                fontWeight: 600,
+                            }}
+                        >
+                            Owner Name
+                        </Typography>
+
+
+
+                        <TextField
+                            fullWidth
+                            name="owner_name"
+                            placeholder="Enter your owner_name "
+                            value={formData.owner_name}
+                            onChange={handleChange}
+                            error={!!errors.owner_name}
+                            helperText={errors.owner_name}
                             sx={inputStyle}
                         />
                     </Box>
