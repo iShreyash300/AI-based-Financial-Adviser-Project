@@ -25,6 +25,8 @@ const connectDB = async () => {
     console.log("✅ Neo PostgreSQL Connected");
     client.release();
   } catch (error) {
+    console.log("hello");
+
     console.log("❌ Database Error:-->", error.message);
   }
 };
