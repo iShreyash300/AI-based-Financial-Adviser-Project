@@ -139,14 +139,23 @@ try:
     mae  = mean_absolute_error(y_test, predictions)
     rmse = np.sqrt(mean_squared_error(y_test, predictions))
     r2   = r2_score(y_test, predictions)
+    residual = y_test - predictions
+    residual_std = np.std(residual)
     print(f"\n===== MODEL EVALUATION =====")
     print(f"MAE  : {mae:.2f}")
     print(f"RMSE : {rmse:.2f}")
     print(f"R²   : {r2:.4f}")
+    print(f"Residual Std Dev: {residual_std:.2f}")
 except Exception as e:
     print(f"[ERROR] Evaluation failed: {e}")
     sys.exit(1)
 
+evaluation_metrics = {
+    "mae": round(mae, 2),
+    "rmse": round(rmse, 2),
+    "r2": round(r2, 4),
+    "residual_std": round(residual_std, 2)
+}
 
 # -------------------------
 # === Save Model ===
@@ -154,9 +163,8 @@ except Exception as e:
 
 # try:
 #     joblib.dump(model, "ml_model/trained_models/expense_prediction_model.pkl")
-#     print("\nModel saved successfully.")
+#     joblib.dump(evaluation_metrics, "ml_model/trained_models/expense_model_metrics.pkl")
+#     print("\nModel and metrics saved successfully.")
 # except Exception as e:
 #     print(f"[ERROR] Failed to save model: {e}")
 #     sys.exit(1)
-
-print("\nModel saved successfully.")
