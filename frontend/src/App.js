@@ -17,12 +17,6 @@ import ProtectedRoute from "../src/routers/ProtectedRoute";
 
 const Home = lazy(() => import("./Components/pages/homePage"));
 
-const AboutPage = lazy(() => import("./Components/pages/aboutPage"));
-
-const ServicePage = lazy(() => import("./Components/pages/servicePage"));
-
-const FeaturePage = lazy(() => import("./Components/pages/featurePage"));
-
 const LoginPage = lazy(() => import("./Components/pages/loginPage"));
 
 const SignupPage = lazy(() => import("./Components/pages/signupPage"));
@@ -34,7 +28,11 @@ const Dashboard = lazy(() => import("./Components/pages/deshboardPage"));
 const ExpensesPage = lazy(() => import("./Components/pages/expenses"));
 
 const BudgetPage = lazy(() => import("./Components/pages/budget"));
+const RevenuePage = lazy(() => import("./Components/pages/revenue"));
 const ProfilePage = lazy(() => import("./Components/pages/profilePage"));
+const PredictionsPage = lazy(() => import("./Components/pages/predictions"));
+const GoalsPage = lazy(() => import("./Components/pages/goals"));
+const FinancialReportPage = lazy(() => import("./Components/pages/financialReport"));
 
 // ================= LOADER =================
 
@@ -73,39 +71,6 @@ function App() {
               element={
                 <Layout>
                   <Home />
-                </Layout>
-              }
-            />
-
-            {/* ABOUT */}
-
-            <Route
-              path="/about"
-              element={
-                <Layout>
-                  <AboutPage />
-                </Layout>
-              }
-            />
-
-            {/* SERVICES */}
-
-            <Route
-              path="/services"
-              element={
-                <Layout>
-                  <ServicePage />
-                </Layout>
-              }
-            />
-
-            {/* FEATURES */}
-
-            <Route
-              path="/features"
-              element={
-                <Layout>
-                  <FeaturePage />
                 </Layout>
               }
             />
@@ -154,6 +119,46 @@ function App() {
                 <Layout>
                   <BudgetPage />
                 </Layout>
+              }
+            />
+            <Route
+              path="/revenues"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <RevenuePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/predictions"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PredictionsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/goals"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <GoalsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <FinancialReportPage />
+                  </Layout>
+                </ProtectedRoute>
               }
             />
           </Routes>

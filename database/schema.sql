@@ -310,14 +310,15 @@ CREATE TABLE goals (
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
     goal_title VARCHAR(255) NOT NULL,
+    description TEXT,
     target_amount DECIMAL(12,2) NOT NULL CHECK (target_amount >= 0),
     current_amount DECIMAL(12,2) DEFAULT 0 CHECK (current_amount >= 0),
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    target_date DATE NOT NULL,
+    category VARCHAR(100) DEFAULT 'General',
 
-    deadline DATE,
-
-    status VARCHAR(50) DEFAULT 'active' CHECK (
-        status IN ('active','completed','failed')
-    ),
+    -- status is computed dynamically based on progress; no CHECK constraint intentionally
+    status VARCHAR(50) DEFAULT 'active',
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

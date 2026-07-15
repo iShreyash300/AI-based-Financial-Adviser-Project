@@ -343,7 +343,8 @@ const Expenses = () => {
             </Button>
 
             {/* Expenses Table */}
-            <TableContainer component={Paper} sx={{ borderRadius: "16px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)", overflow: "hidden" }}>
+            <TableContainer component={Paper}
+                sx={{ borderRadius: "16px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)", overflowY: "hidden", overflowX: "auto", flex: "1 1 auto", whiteSpace: "nowrap" }}>
                 <Table>
                     <TableHead sx={{ backgroundColor: "#f8f9fa" }}>
                         <TableRow>

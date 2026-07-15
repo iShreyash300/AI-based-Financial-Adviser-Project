@@ -65,10 +65,22 @@ const Layout = ({ children }) => {
                         <Box
                             sx={{
                                 minWidth: { md: "250px", xs: "100%" },
-                                height: "auto",
-                                overflowY: "visible",
+                                // height: "100vh",
+                                // overflowY: "visible",
                                 borderRight: { xs: "none", md: "1px solid #eee" },
                                 borderTop: { xs: "1px solid #eee", md: "none" },
+                                position: { xs: "fixed", md: "relative" },
+                                bottom: { xs: "0", md: "0" },
+
+                                zIndex: { md: 0, xs: 10 },
+                                // background: { xs: "#2a2d3a", md: "#fff" },
+                                // Hide scrollbar for Chrome, Safari and Opera
+                                '&::-webkit-scrollbar': {
+                                    display: 'none',
+                                },
+                                // Hide scrollbar for IE, Edge and Firefox
+                                msOverflowStyle: 'none',
+                                scrollbarWidth: 'none',
                             }}
                         >
                             <Sidebar />
@@ -85,7 +97,7 @@ const Layout = ({ children }) => {
                                 xs: "auto",
                                 md: "calc(100vh - 75px)",
                             },
-                            // p: 2,
+                            py: 8,
                         }}
                     >
                         {children}

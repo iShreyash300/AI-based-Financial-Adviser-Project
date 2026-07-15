@@ -13,9 +13,12 @@ import {
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import AnalyticsOutlinedIcon from "@mui/icons-material/AnalyticsOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-// import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import SummarizeIcon from '@mui/icons-material/Summarize';
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import AutoGraphIcon from '@mui/icons-material/AutoGraph';
+import BatchPredictionIcon from '@mui/icons-material/BatchPrediction';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 
 const menuItems = [
   {
@@ -35,23 +38,23 @@ const menuItems = [
   },
   {
     name: "Revenues",
-    icon: <SettingsOutlinedIcon />,
+    icon: <AutoGraphIcon />,
+    path: "/revenues",
   },
   {
     name: "Predictions",
-    icon: <SettingsOutlinedIcon />,
-  },
-  {
-    name: "Health score",
-    icon: <SettingsOutlinedIcon />,
+    icon: <TipsAndUpdatesIcon />,
+    path: "/predictions",
   },
   {
     name: "Growth Plans",
-    icon: <SettingsOutlinedIcon />,
+    icon: <BatchPredictionIcon />,
+    path: "/goals",
   },
   {
     name: "Reports",
-    icon: <SettingsOutlinedIcon />,
+    icon: <SummarizeIcon />,
+    path: "/reports",
   },
 ];
 
@@ -132,6 +135,8 @@ const Sidebar = () => {
           xs: "none",
           md: "1px solid #eee",
         },
+        position: { md: "fixed", xs: "relative" },
+
       }}
     >
       {/* TOP SECTION - DESKTOP ONLY */}
@@ -161,6 +166,7 @@ const Sidebar = () => {
               color: "#fff",
               fontWeight: 700,
               fontSize: "18px",
+
             }}
           >
             F

@@ -21,7 +21,8 @@ const CustomCard = ({
         borderRadius: "16px",
         boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
         p: 1,
-        minWidth: 285,
+        // minWidth: 285,
+        width: "100%",
         height: "auto",
       }}
     >

@@ -124,30 +124,14 @@ const Navbar = ({ isLogin }) => {
                             minHeight: "75px",
                         }}
                     >
-                        {/* LEFT SIDE */}
+
 
                         <Stack
                             direction="row"
                             alignItems="center"
                             spacing={4}
                         >
-                            {/* MOBILE MENU */}
 
-                            {/* <IconButton
-                                sx={{
-                                    display: {
-                                        xs: "flex",
-                                        md: "none",
-                                    },
-                                }}
-                                onClick={() =>
-                                    setOpenDrawer(true)
-                                }
-                            >
-                                <MenuIcon />
-                            </IconButton> */}
-
-                            {/* LOGO */}
 
                             <Typography
                                 sx={{
@@ -275,7 +259,7 @@ const Navbar = ({ isLogin }) => {
 
             {isLogin && (
                 <AppBar
-                    position="static"
+                    position="fixed"
                     elevation={0}
                     sx={{
                         background: "#fff",
@@ -284,7 +268,7 @@ const Navbar = ({ isLogin }) => {
                             xs: "auto",
                             md: 3,
                         },
-                        position: { md: "sticky", xs: "fixed" },
+
                         zIndex: "1"
                     }}
                 >
