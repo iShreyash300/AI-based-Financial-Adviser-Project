@@ -17,7 +17,6 @@ import SummarizeIcon from '@mui/icons-material/Summarize';
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import BatchPredictionIcon from '@mui/icons-material/BatchPrediction';
-import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 
 const menuItems = [

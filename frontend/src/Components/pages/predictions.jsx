@@ -85,7 +85,7 @@ const PredictionsPage = () => {
 
   useEffect(() => {
     fetchPredictions(tabEndpoints[tabValue]);
-  }, [tabValue]);
+  }, [tabEndpoints, tabValue]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -235,7 +235,7 @@ const PredictionsPage = () => {
 
   const isExpense = tabValue === 0;
   const isRevenue = tabValue === 1;
-  const isCashFlow = tabValue === 2;
+  // const isCashFlow = tabValue === 2;
 
   // Header metric colors based on page state
   const getThemeColor = () => {
