@@ -128,7 +128,7 @@ const SignupPage = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/api/auth/signup",
+                "https://ai-based-financial-adviser-project.onrender.com/api/auth/signup",
                 {
                     business_name: formData.business_name,
                     owner_name: formData.owner_name,

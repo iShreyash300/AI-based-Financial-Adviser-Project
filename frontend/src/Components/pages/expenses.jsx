@@ -122,7 +122,7 @@ const Expenses = () => {
         setError(null);
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.get("http://localhost:5000/api/expenses", {
+            const response = await axios.get("https://ai-based-financial-adviser-project.onrender.com/api/expenses", {
                 headers: { Authorization: token },
             });
             if (response.data && response.data.success) {
@@ -166,7 +166,7 @@ const Expenses = () => {
         try {
             const token = localStorage.getItem("token");
             const response = await axios.post(
-                "http://localhost:5000/api/expenses",
+                "https://ai-based-financial-adviser-project.onrender.com/api/expenses",
                 {
                     ...formData,
                     amount: Number(formData.amount),
@@ -205,7 +205,7 @@ const Expenses = () => {
         if (!window.confirm("Are you sure you want to delete this expense?")) return;
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.delete(`http://localhost:5000/api/expenses/${id}`, {
+            const response = await axios.delete(`https://ai-based-financial-adviser-project.onrender.com/api/expenses/${id}`, {
                 headers: { Authorization: token },
             });
             if (response.data && response.data.success) {

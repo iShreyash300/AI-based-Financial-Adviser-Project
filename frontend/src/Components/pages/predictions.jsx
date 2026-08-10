@@ -48,7 +48,7 @@ ChartJS.register(
   Filler
 );
 
-const API_BASE_URL = "http://localhost:5000/api/predictions";
+const API_BASE_URL = "https://ai-based-financial-adviser-project.onrender.com/api/predictions";
 
 const PredictionsPage = () => {
   const [tabValue, setTabValue] = useState(0); // 0: Expense, 1: Revenue, 2: Cash Flow

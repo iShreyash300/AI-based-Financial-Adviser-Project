@@ -47,7 +47,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://ai-based-financial-adviser-project.onrender.com/api";
 const GOALS_URL = `${API_BASE}/goals`;
 const REC_URL = `${API_BASE}/growth-plan/recommendations`;
 

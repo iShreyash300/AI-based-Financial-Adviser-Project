@@ -71,7 +71,7 @@ const Sidebar = () => {
     if (!token) return;
 
     axios
-      .get("http://localhost:5000/api/auth/profile", {
+      .get("https://ai-based-financial-adviser-project.onrender.com/api/auth/profile", {
         headers: { Authorization: token },
       })
       .then((res) => setUser(res.data.user || null))

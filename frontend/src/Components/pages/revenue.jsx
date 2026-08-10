@@ -26,7 +26,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-const API_BASE_URL = "http://localhost:5000/api/revenues";
+const API_BASE_URL = "https://ai-based-financial-adviser-project.onrender.com/api/revenues";
 
 const createInitialForm = () => ({
     source: "",

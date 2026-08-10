@@ -41,7 +41,7 @@ ChartJS.register(
 );
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const API = "http://localhost:5000/api";
+const API = "https://ai-based-financial-adviser-project.onrender.com/api";
 const getAuth = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: token } : {};

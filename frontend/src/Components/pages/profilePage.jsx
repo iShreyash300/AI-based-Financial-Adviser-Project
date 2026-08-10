@@ -33,7 +33,7 @@ const ProfilePage = () => {
 
         const fetchProfile = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/auth/profile", {
+                const response = await axios.get("https://ai-based-financial-adviser-project.onrender.com/api/auth/profile", {
                     headers: { Authorization: token },
                 });
 
@@ -78,7 +78,7 @@ const ProfilePage = () => {
 
         try {
             const response = await axios.put(
-                "http://localhost:5000/api/auth/profile",
+                "https://ai-based-financial-adviser-project.onrender.com/api/auth/profile",
                 {
                     name: formData.name,
                     business_name: formData.business_name,

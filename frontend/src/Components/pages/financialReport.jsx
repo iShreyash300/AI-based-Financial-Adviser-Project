@@ -35,7 +35,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend);
 
-const API_BASE = "http://localhost:5000/api/reports";
+const API_BASE = "https://ai-based-financial-adviser-project.onrender.com/api/reports";
 
 const reportFilters = [
     { value: "this_month", label: "This Month" },
