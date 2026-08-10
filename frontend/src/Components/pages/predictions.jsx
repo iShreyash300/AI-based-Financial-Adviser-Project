@@ -235,7 +235,6 @@ const PredictionsPage = () => {
 
   const isExpense = tabValue === 0;
   const isRevenue = tabValue === 1;
-  // const isCashFlow = tabValue === 2;
 
   // Header metric colors based on page state
   const getThemeColor = () => {
