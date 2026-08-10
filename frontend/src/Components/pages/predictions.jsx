@@ -367,7 +367,7 @@ const PredictionsPage = () => {
       {error && (
         <Alert severity="error" sx={{ mb: 3, borderRadius: "14px" }}>
           {error}
-        </Alert>git 
+        </Alert>
       )}
 
       {loading ? (
