@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import {
   Box,
@@ -56,7 +56,10 @@ const PredictionsPage = () => {
   const [error, setError] = useState("");
   const [predictionData, setPredictionData] = useState(null);
 
-  const tabEndpoints = ["expense", "revenue", "cashflow"];
+  const tabEndpoints = useMemo(
+    () => ["expense", "revenue", "cashflow"],
+    []
+  );
 
   const fetchPredictions = async (type) => {
     setLoading(true);
@@ -364,7 +367,7 @@ const PredictionsPage = () => {
       {error && (
         <Alert severity="error" sx={{ mb: 3, borderRadius: "14px" }}>
           {error}
-        </Alert>
+        </Alert>git 
       )}
 
       {loading ? (
