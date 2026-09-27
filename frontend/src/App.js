@@ -8,31 +8,31 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { Box, CircularProgress } from "@mui/material";
 
-import Layout from "./Components/layouts/index";
+import Layout from "./components/layouts/index";
 
 import ProtectedRoute from "../src/routers/ProtectedRoute";
 // import Dashboard from "./Components/pages/deshboardPage";
 
 // ================= LAZY IMPORT =================
 
-const Home = lazy(() => import("./Components/pages/homePage"));
+const Home = lazy(() => import("./components/pages/homePage"));
 
-const LoginPage = lazy(() => import("./Components/pages/loginPage"));
+const LoginPage = lazy(() => import("./components/pages/loginPage"));
 
-const SignupPage = lazy(() => import("./Components/pages/signupPage"));
+const SignupPage = lazy(() => import("./components/pages/signupPage"));
 
-const ForgetPassword = lazy(() => import("./Components/pages/forgetPassword"));
+const ForgetPassword = lazy(() => import("./components/pages/forgetPassword"));
 
-const Dashboard = lazy(() => import("./Components/pages/deshboardPage"));
+const Dashboard = lazy(() => import("./components/pages/deshboardPage"));
 
-const ExpensesPage = lazy(() => import("./Components/pages/expenses"));
+const ExpensesPage = lazy(() => import("./components/pages/expenses"));
 
-const BudgetPage = lazy(() => import("./Components/pages/budget"));
-const RevenuePage = lazy(() => import("./Components/pages/revenue"));
-const ProfilePage = lazy(() => import("./Components/pages/profilePage"));
-const PredictionsPage = lazy(() => import("./Components/pages/predictions"));
-const GoalsPage = lazy(() => import("./Components/pages/goals"));
-const FinancialReportPage = lazy(() => import("./Components/pages/financialReport"));
+const BudgetPage = lazy(() => import("./components/pages/budget"));
+const RevenuePage = lazy(() => import("./components/pages/revenue"));
+const ProfilePage = lazy(() => import("./components/pages/profilePage"));
+const PredictionsPage = lazy(() => import("./components/pages/predictions"));
+const GoalsPage = lazy(() => import("./components/pages/goals"));
+const FinancialReportPage = lazy(() => import("./components/pages/financialReport"));
 
 // ================= LOADER =================
 
