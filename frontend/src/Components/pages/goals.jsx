@@ -103,7 +103,7 @@ const iconForType = (iconName) => {
 };
 
 const fmt = (n) =>
-  Number(n).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  Number(n).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
 const getGoalTitle = (goal = {}) => goal?.goal_title || goal?.title || "Untitled Goal";
 

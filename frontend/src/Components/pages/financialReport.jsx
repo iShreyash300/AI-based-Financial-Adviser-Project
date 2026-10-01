@@ -51,9 +51,9 @@ const getAuthHeader = () => {
 };
 
 const currency = (value) =>
-    Number(value || 0).toLocaleString("en-US", {
+    Number(value || 0).toLocaleString("en-IN", {
         style: "currency",
-        currency: "USD",
+        currency: "INR",
         maximumFractionDigits: 0,
     });
 
