@@ -42,51 +42,45 @@ FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
 
 -- =========================================
--- 2. DEPARTMENT TYPES
--- =========================================
-
-CREATE TABLE department_types (
-    id SERIAL PRIMARY KEY,
-
-    type_name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-
-
-INSERT INTO department_types (type_name, description)
-VALUES
-('revenue_generating', 'Income generating activities'),
-('growth_marketing', 'Customer acquisition and branding'),
-('operations', 'Core execution functions'),
-('support', 'Internal support functions'),
-('finance_control', 'Budgeting and financial control');
-
-
-
--- =========================================
 -- 3. DEPARTMENTS
 -- =========================================
 
 CREATE TABLE departments (
     id SERIAL PRIMARY KEY,
 
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    department_type_id INT REFERENCES department_types(id) ON DELETE SET NULL,
-
-    department_name VARCHAR(255) NOT NULL,
+    department_name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_departments_type ON departments(department_type_id);
+-- DEFAULT FINAI DEPARTMENTS
+
+INSERT INTO departments (department_name, description)
+VALUES
+    ('Sales',
+     'Activities directly involved in selling products or services and generating revenue'),
+
+    ('Marketing',
+     'Activities focused on customer acquisition, promotion, branding, and business growth'),
+
+    ('Operations',
+     'Core activities required to produce, deliver, and manage the business products or services'),
+
+    ('Human Resources',
+     'Activities related to employees, recruitment, salaries, training, and workforce management'),
+
+    ('Customer Support',
+     'Activities focused on assisting customers, resolving issues, and providing post-sale service'),
+
+    ('Finance',
+     'Activities related to accounting, budgeting, financial management, and financial control');
 
 CREATE TRIGGER trg_departments_updated
 BEFORE UPDATE ON departments
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
 
 
 
@@ -97,7 +91,11 @@ FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 CREATE TABLE expense_categories (
     id SERIAL PRIMARY KEY,
 
-    category_name VARCHAR(255) NOT NULL,
+    category_name VARCHAR(255) UNIQUE NOT NULL,
+
+    department_id INT NOT NULL
+        REFERENCES departments(id)
+        ON DELETE RESTRICT,
 
     category_type VARCHAR(50) CHECK (
         category_type IN (
@@ -112,31 +110,162 @@ CREATE TABLE expense_categories (
     keywords TEXT,
     priority_weight INT DEFAULT 1,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    UNIQUE(category_name)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
+-- KEYWORD SEARCH INDEX
 
 CREATE INDEX idx_expense_categories_keywords
 ON expense_categories USING GIN (
     to_tsvector('english', COALESCE(keywords, ''))
 );
 
+-- DEFAULT FINAI EXPENSE CATEGORIES
 
-
-INSERT INTO expense_categories (category_name, category_type, keywords, priority_weight)
+INSERT INTO expense_categories
+(category_name, department_id, category_type, keywords, priority_weight)
 VALUES
-('Ads Spend', 'variable', 'ads advertising campaign marketing meta google instagram', 2),
-('Cloud Hosting', 'operational', 'cloud hosting aws server database backend infra', 3),
-('Food Supply', 'variable', 'supply raw material food inventory stock procurement', 2),
-('Fuel', 'operational', 'fuel petrol diesel transport logistics', 2),
-('Maintenance', 'fixed', 'repair maintenance service upkeep fix', 2),
-('Salary', 'fixed', 'salary payroll wages employee staff', 5),
-('Rent', 'fixed', 'rent lease office warehouse store', 5),
-('Inventory', 'variable', 'inventory stock goods purchase procurement', 4),
-('Software Tools', 'operational', 'software saas license subscription tools', 3);
+
+-- SALES
+
+(
+    'Sales Promotion',
+    (SELECT id FROM departments WHERE department_name = 'Sales'),
+    'variable',
+    'sales promotion discount offer coupon sales incentive dealer promotion customer offer product promotion',
+    3
+),
+
+
+-- MARKETING
+
+(
+    'Marketing & Promotion',
+    (SELECT id FROM departments WHERE department_name = 'Marketing'),
+    'variable',
+    'marketing advertising ads advertisement campaign branding promotion google meta facebook instagram youtube social media content event sponsorship digital marketing seo',
+    5
+),
+
+-- OPERATIONS
+
+(
+    'Raw Materials',
+    (SELECT id FROM departments WHERE department_name = 'Operations'),
+    'variable',
+    'raw material raw materials manufacturing materials production components parts ingredients supplies procurement input material',
+    5
+),
+
+(
+    'Inventory',
+    (SELECT id FROM departments WHERE department_name = 'Operations'),
+    'variable',
+    'inventory stock goods merchandise products purchase procurement warehouse replenishment stock purchase',
+    4
+),
+
+(
+    'Food Supply',
+    (SELECT id FROM departments WHERE department_name = 'Operations'),
+    'variable',
+    'food supply food ingredients vegetables fruits dairy grocery cooking material kitchen supplies raw food food procurement',
+    4
+),
+
+(
+    'Logistics',
+    (SELECT id FROM departments WHERE department_name = 'Operations'),
+    'variable',
+    'logistics transportation transport freight shipping delivery courier dispatch cargo trucking delivery charges transportation charges',
+    4
+),
+
+(
+    'Rent',
+    (SELECT id FROM departments WHERE department_name = 'Operations'),
+    'fixed',
+    'rent lease rental warehouse office shop store factory building premises property monthly rent',
+    5
+),
+
+(
+    'Maintenance',
+    (SELECT id FROM departments WHERE department_name = 'Operations'),
+    'fixed',
+    'maintenance repair servicing service upkeep equipment repair machine repair vehicle repair replacement parts',
+    4
+),
+
+(
+    'Software Tools',
+    (SELECT id FROM departments WHERE department_name = 'Operations'),
+    'operational',
+    'software software tools saas license subscription application app platform technology developer tools productivity software',
+    3
+),
+
+-- HUMAN RESOURCES
+
+(
+    'Salary',
+    (SELECT id FROM departments WHERE department_name = 'Human Resources'),
+    'salary',
+    'salary salaries payroll wages employee staff compensation monthly salary workforce personnel payroll payment',
+    5
+),
+
+(
+    'Employee Training',
+    (SELECT id FROM departments WHERE department_name = 'Human Resources'),
+    'variable',
+    'employee training training development workshop certification course learning seminar skill development employee education',
+    3
+),
+
+-- CUSTOMER SUPPORT
+
+(
+    'Customer Service',
+    (SELECT id FROM departments WHERE department_name = 'Customer Support'),
+    'operational',
+    'customer service customer care support helpdesk assistance complaint resolution customer assistance after sales service helpline',
+    4
+),
+
+(
+    'Customer Refunds',
+    (SELECT id FROM departments WHERE department_name = 'Customer Support'),
+    'variable',
+    'refund refunds customer refund return reimbursement money back product return replacement compensation',
+    4
+),
+
+-- FINANCE
+
+(
+    'Bank Charges',
+    (SELECT id FROM departments WHERE department_name = 'Finance'),
+    'operational',
+    'bank charges banking fee transaction fee payment gateway bank fee processing fee transfer fee merchant charges',
+    4
+),
+
+(
+    'Taxes',
+    (SELECT id FROM departments WHERE department_name = 'Finance'),
+    'fixed',
+    'tax taxes gst income tax corporate tax sales tax tax payment tax filing tds customs duty government tax',
+    5
+),
+
+(
+    'Professional Fees',
+    (SELECT id FROM departments WHERE department_name = 'Finance'),
+    'operational',
+    'professional fees consultant consulting legal lawyer advocate attorney advisory services professional service consulting fee',
+    3
+);
 
 
 
@@ -148,7 +277,6 @@ CREATE TABLE expenses (
     id SERIAL PRIMARY KEY,
 
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    department_id INT REFERENCES departments(id) ON DELETE SET NULL,
     category_id INT REFERENCES expense_categories(id) ON DELETE SET NULL,
 
     title VARCHAR(255) NOT NULL,
