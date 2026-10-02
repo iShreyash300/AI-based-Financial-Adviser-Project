@@ -570,7 +570,7 @@ CREATE TABLE processed_market_data (
     gold_price DECIMAL(18,4),
     silver_price DECIMAL(18,4),
 
-    additional_metrics JSONB,
+    additional_metrics JSONB
 
 );
 
