@@ -17,12 +17,6 @@ CREATE TABLE users (
 
 );
 
-CREATE TRIGGER trg_users_updated
-BEFORE UPDATE ON users
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
-
-
 -- =========================================
 -- 3. DEPARTMENTS
 -- =========================================
@@ -56,11 +50,6 @@ VALUES
 
     ('Finance',
      'Activities related to accounting, budgeting, financial management, and financial control');
-
-CREATE TRIGGER trg_departments_updated
-BEFORE UPDATE ON departments
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
 
 
 
@@ -274,12 +263,6 @@ CREATE TABLE expenses (
 
 );
 
-CREATE TRIGGER trg_expenses_updated
-BEFORE UPDATE ON expenses
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
-
-
 -- =========================================
 -- 6. REVENUE
 -- =========================================
@@ -296,12 +279,6 @@ CREATE TABLE revenue (
     amount DECIMAL(12,2) NOT NULL CHECK (amount >= 0),
     revenue_date DATE NOT NULL
 );
-
-CREATE TRIGGER trg_revenue_updated
-BEFORE UPDATE ON revenue
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
-
 
 -- =========================================
 -- 7. BUDGETS
@@ -320,12 +297,6 @@ CREATE TABLE budgets (
 
     UNIQUE(user_id, department_id, budget_month, budget_year)
 );
-
-CREATE TRIGGER trg_budgets_updated
-BEFORE UPDATE ON budgets
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
-
 
 -- =========================================
 -- 8. FINANCIAL HEALTH SCORES
@@ -416,12 +387,6 @@ CREATE TABLE goals (
     status VARCHAR(50) DEFAULT 'active'
 
 );
-
-CREATE TRIGGER trg_goals_updated
-BEFORE UPDATE ON goals
-FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
-
 
 -- =========================================
 -- 12. AI RECOMMENDATIONS
@@ -635,8 +600,5 @@ CREATE TABLE market_summary (
     trend VARCHAR(50),
     volatility DECIMAL(10,4),
 
-    market_status VARCHAR(50),
-
-    summary_timestamp TIMESTAMP NOT NULL
-
+    market_status VARCHAR(50)
 );
