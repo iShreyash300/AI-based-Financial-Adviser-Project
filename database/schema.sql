@@ -31,8 +31,6 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TRIGGER trg_users_updated
@@ -51,8 +49,6 @@ CREATE TABLE departments (
     department_name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- DEFAULT FINAI DEPARTMENTS
@@ -109,8 +105,6 @@ CREATE TABLE expense_categories (
 
     keywords TEXT,
     priority_weight INT DEFAULT 1,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- KEYWORD SEARCH INDEX
@@ -294,8 +288,6 @@ CREATE TABLE expenses (
         recurring_frequency IN ('one_time','daily','weekly','monthly','yearly')
     ),
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TRIGGER trg_expenses_updated
@@ -319,9 +311,6 @@ CREATE TABLE revenue (
 
     amount DECIMAL(12,2) NOT NULL CHECK (amount >= 0),
     revenue_date DATE NOT NULL,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TRIGGER trg_revenue_updated
@@ -344,9 +333,6 @@ CREATE TABLE budgets (
     budget_year INT NOT NULL,
 
     amount DECIMAL(12,2) NOT NULL CHECK (amount >= 0),
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE(user_id, department_id, budget_month, budget_year)
 );
@@ -395,8 +381,6 @@ CREATE TABLE predictions (
 
     prediction_month INT CHECK (prediction_month BETWEEN 1 AND 12),
     prediction_year INT,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -423,8 +407,6 @@ CREATE TABLE alerts (
 
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -449,8 +431,6 @@ CREATE TABLE goals (
     -- status is computed dynamically based on progress; no CHECK constraint intentionally
     status VARCHAR(50) DEFAULT 'active',
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TRIGGER trg_goals_updated
@@ -484,8 +464,6 @@ CREATE TABLE ai_recommendations (
     priority VARCHAR(20) CHECK (
         priority IN ('low','medium','high')
     ),
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -510,9 +488,27 @@ CREATE INDEX idx_goals_user ON goals(user_id);
 -- MARKET ANALYSIS EXPANSION
 -- =========================================================
 
+-- =========================================================
+-- 13. USER MARKET PREFERENCES
+-- Optional personalized market preferences for users
+-- =========================================================
+
+CREATE TABLE user_market_preferences (
+    id SERIAL PRIMARY KEY,
+
+    user_id INT NOT NULL UNIQUE
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    preferred_instruments JSONB,
+    preferred_sectors JSONB,
+
+    risk_profile VARCHAR(30),
+
+);
 
 -- =========================================================
--- 13. MARKET DATA
+-- 14. MARKET DATA
 -- =========================================================
 
 CREATE TABLE market_data (
@@ -537,12 +533,10 @@ CREATE TABLE market_data (
     volume DECIMAL(20,4),
 
     source VARCHAR(100),
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================================================
--- 14. BANK DATA
+-- 15. BANK DATA
 -- =========================================================
 
 CREATE TABLE bank_data (
@@ -559,11 +553,10 @@ CREATE TABLE bank_data (
 
     source VARCHAR(100),
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================================================
--- 15. GOLD & SILVER DATA
+-- 16. GOLD & SILVER DATA
 -- =========================================================
 
 CREATE TABLE gold_silver_data (
@@ -586,12 +579,11 @@ CREATE TABLE gold_silver_data (
 
     source VARCHAR(100),
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
 -- =========================================================
--- 16. PROCESSED MARKET DATA
+-- 17. PROCESSED MARKET DATA
 -- =========================================================
 
 CREATE TABLE processed_market_data (
@@ -631,11 +623,10 @@ CREATE TABLE processed_market_data (
 
     additional_metrics JSONB,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- =========================================================
--- 17. MARKET SUMMARY
+-- 18. MARKET SUMMARY
 -- Frontend-facing processed market information
 -- =========================================================
 
@@ -664,5 +655,4 @@ CREATE TABLE market_summary (
 
     summary_timestamp TIMESTAMP NOT NULL,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
