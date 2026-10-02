@@ -31,7 +31,7 @@ CREATE TABLE departments (
     id SERIAL PRIMARY KEY,
 
     department_name VARCHAR(100) UNIQUE NOT NULL,
-    description TEXT,
+    description TEXT
 
 );
 
@@ -88,7 +88,7 @@ CREATE TABLE expense_categories (
     ),
 
     keywords TEXT,
-    priority_weight INT DEFAULT 1,
+    priority_weight INT DEFAULT 1
 );
 
 -- KEYWORD SEARCH INDEX
@@ -270,7 +270,7 @@ CREATE TABLE expenses (
 
     recurring_frequency VARCHAR(50) CHECK (
         recurring_frequency IN ('one_time','daily','weekly','monthly','yearly')
-    ),
+    )
 
 );
 
@@ -294,7 +294,7 @@ CREATE TABLE revenue (
     description TEXT,
 
     amount DECIMAL(12,2) NOT NULL CHECK (amount >= 0),
-    revenue_date DATE NOT NULL,
+    revenue_date DATE NOT NULL
 );
 
 CREATE TRIGGER trg_revenue_updated
@@ -364,7 +364,7 @@ CREATE TABLE predictions (
     confidence_score DECIMAL(5,2) CHECK (confidence_score BETWEEN 0 AND 100),
 
     prediction_month INT CHECK (prediction_month BETWEEN 1 AND 12),
-    prediction_year INT,
+    prediction_year INT
 );
 
 
@@ -390,7 +390,7 @@ CREATE TABLE alerts (
     ),
 
     message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT FALSE,
+    is_read BOOLEAN DEFAULT FALSE
 );
 
 
@@ -413,7 +413,7 @@ CREATE TABLE goals (
     category VARCHAR(100) DEFAULT 'General',
 
     -- status is computed dynamically based on progress; no CHECK constraint intentionally
-    status VARCHAR(50) DEFAULT 'active',
+    status VARCHAR(50) DEFAULT 'active'
 
 );
 
@@ -447,7 +447,7 @@ CREATE TABLE ai_recommendations (
 
     priority VARCHAR(20) CHECK (
         priority IN ('low','medium','high')
-    ),
+    )
 );
 
 
@@ -487,7 +487,7 @@ CREATE TABLE user_market_preferences (
     preferred_instruments JSONB,
     preferred_sectors JSONB,
 
-    risk_profile VARCHAR(30),
+    risk_profile VARCHAR(30)
 
 );
 
@@ -516,7 +516,7 @@ CREATE TABLE market_data (
 
     volume DECIMAL(20,4),
 
-    source VARCHAR(100),
+    source VARCHAR(100)
 );
 
 -- =========================================================
@@ -535,7 +535,7 @@ CREATE TABLE bank_data (
 
     timestamp TIMESTAMP NOT NULL,
 
-    source VARCHAR(100),
+    source VARCHAR(100)
 
 );
 
@@ -561,7 +561,7 @@ CREATE TABLE gold_silver_data (
 
     unit VARCHAR(50),
 
-    source VARCHAR(100),
+    source VARCHAR(100)
 
 );
 
@@ -637,6 +637,6 @@ CREATE TABLE market_summary (
 
     market_status VARCHAR(50),
 
-    summary_timestamp TIMESTAMP NOT NULL,
+    summary_timestamp TIMESTAMP NOT NULL
 
 );

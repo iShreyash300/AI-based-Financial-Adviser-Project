@@ -7,7 +7,7 @@ import pandas as pd
 # === Database Connection ===
 # -------------------------
 
-DATABASE_URL = "postgresql://neondb_owner:npg_wpNc8tA3aWov@ep-polished-haze-aolhlk96-pooler.c-2.ap-southeast-1.aws.neon.tech/financial_advisor?sslmode=require&channel_binding=require"
+DATABASE_URL = "postgresql://neondb_owner:npg_wpNc8tA3aWov@ep-polished-haze-aolhlk96-pooler.c-2.ap-southeast-1.aws.neon.tech/financial-advisor-v2?sslmode=require&channel_binding=require"
 
 # DATABASE_URL = "postgresql://postgres:THIS_IS_DEFINITELY_WRONG_123456@localhost:5432/financial_advisor"
 
