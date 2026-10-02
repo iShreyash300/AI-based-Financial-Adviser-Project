@@ -56,7 +56,8 @@ const MyPortfolioPage = () => {
           </Button>
         </Stack>
 
-        <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+        <Stack
+          sx={{ mb: 3, flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: "flex-start" }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 800, color: "#111827" }}>
               My Investment Holdings
@@ -80,13 +81,13 @@ const MyPortfolioPage = () => {
               px: 3,
             }}
           >
-            + Add Investment
+            Add Investment
           </Button>
         </Stack>
 
         {/* Top Summary Banner */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={4}>
+        <Grid container spacing={3} sx={{ mb: 3, justifyContent: "space-between", flexDirection: "row", flexWrap: "nowrap" }}>
+          <Grid item xs={12} sm={4} sx={{ width: "100%" }} >
             <Paper elevation={0} sx={{ p: 3, borderRadius: "18px", background: "#fff", border: "1px solid #eef2f6" }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Total Invested</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: "#1e293b", my: 0.5 }}>
@@ -94,7 +95,7 @@ const MyPortfolioPage = () => {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={4} sx={{ width: "100%" }} >
             <Paper elevation={0} sx={{ p: 3, borderRadius: "18px", background: "#fff", border: "1px solid #eef2f6" }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Current Value</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: "#7B61FF", my: 0.5 }}>
@@ -102,7 +103,7 @@ const MyPortfolioPage = () => {
               </Typography>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={4} sx={{ width: "100%" }} >
             <Paper elevation={0} sx={{ p: 3, borderRadius: "18px", background: "#fff", border: "1px solid #eef2f6" }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Total Profit / Loss</Typography>
               <Typography variant="h4" sx={{ fontWeight: 800, color: totalProfitLoss >= 0 ? "#00C853" : "#d32f2f", my: 0.5 }}>

@@ -41,7 +41,7 @@ ChartJS.register(
 );
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const API = "https://ai-based-financial-adviser-project.onrender.com/api";
+const API = "https://ai-based-financial-adviser-project-v1.onrender.com/api";
 const getAuth = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: token } : {};
@@ -154,8 +154,8 @@ const Dashboard = () => {
     setLoadingCharts(true);
     try {
       const [sumRes, chartRes] = await Promise.all([
-        axios.get(`${API}/reports/summary`, { headers: getAuth() }),
-        axios.get(`${API}/reports/charts`, { headers: getAuth() }),
+        axios.get(`${API}/reports/summary?filter=last_3_months`, { headers: getAuth() }),
+        axios.get(`${API}/reports/charts?filter=last_3_months`, { headers: getAuth() }),
       ]);
       if (sumRes.data?.success) setSummary(sumRes.data.data);
       if (chartRes.data?.success) setCharts(chartRes.data.data);
@@ -276,7 +276,7 @@ const Dashboard = () => {
             Dashboard
           </Typography>
           <Typography sx={{ fontSize: "13px", color: "#aaa", mt: 0.3 }}>
-            Live financial overview · {summary?.period ?? "Loading…"}
+            Live financial overview · {summary?.period ?? "Last 3 Months"}
           </Typography>
         </Box>
         <Tooltip title="Refresh all data">
