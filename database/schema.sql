@@ -416,7 +416,8 @@ CREATE TABLE alerts (
             'low_cashflow',
             'high_expense',
             'goal_reminder',
-            'prediction_warning'
+            'prediction_warning',
+            'market_trend_alert'
         )
     ),
 
@@ -472,6 +473,7 @@ CREATE TABLE ai_recommendations (
             'expense_reduction',
             'budget_advice',
             'investment_tip',
+            'investment_opportunity',
             'saving_suggestion',
             'risk_alert'
         )
@@ -503,3 +505,164 @@ CREATE INDEX idx_revenue_user_date ON revenue(user_id, revenue_date);
 CREATE INDEX idx_alerts_user ON alerts(user_id);
 CREATE INDEX idx_predictions_user ON predictions(user_id);
 CREATE INDEX idx_goals_user ON goals(user_id);
+
+-- =========================================================
+-- MARKET ANALYSIS EXPANSION
+-- =========================================================
+
+
+-- =========================================================
+-- 13. MARKET DATA
+-- =========================================================
+
+CREATE TABLE market_data (
+    id SERIAL PRIMARY KEY,
+
+    instrument_name VARCHAR(150) NOT NULL,
+    symbol VARCHAR(50) NOT NULL,
+    instrument_type VARCHAR(50) NOT NULL,
+    exchange VARCHAR(50),
+
+    timestamp TIMESTAMP NOT NULL,
+
+    open DECIMAL(18,4),
+    high DECIMAL(18,4),
+    low DECIMAL(18,4),
+    close DECIMAL(18,4),
+
+    previous_close DECIMAL(18,4),
+    change DECIMAL(18,4),
+    change_percent DECIMAL(10,4),
+
+    volume DECIMAL(20,4),
+
+    source VARCHAR(100),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================
+-- 14. BANK DATA
+-- =========================================================
+
+CREATE TABLE bank_data (
+    id SERIAL PRIMARY KEY,
+
+    bank_name VARCHAR(150),
+    symbol VARCHAR(50),
+
+    data_type VARCHAR(100) NOT NULL,
+    value DECIMAL(18,6),
+    unit VARCHAR(50),
+
+    timestamp TIMESTAMP NOT NULL,
+
+    source VARCHAR(100),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================
+-- 15. GOLD & SILVER DATA
+-- =========================================================
+
+CREATE TABLE gold_silver_data (
+    id SERIAL PRIMARY KEY,
+
+    metal VARCHAR(20) NOT NULL,
+
+    timestamp TIMESTAMP NOT NULL,
+
+    open DECIMAL(18,4),
+    high DECIMAL(18,4),
+    low DECIMAL(18,4),
+    close DECIMAL(18,4),
+
+    previous_close DECIMAL(18,4),
+    change DECIMAL(18,4),
+    change_percent DECIMAL(10,4),
+
+    unit VARCHAR(50),
+
+    source VARCHAR(100),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- =========================================================
+-- 16. PROCESSED MARKET DATA
+-- =========================================================
+
+CREATE TABLE processed_market_data (
+    id SERIAL PRIMARY KEY,
+
+    instrument_name VARCHAR(150) NOT NULL,
+    symbol VARCHAR(50) NOT NULL,
+    instrument_type VARCHAR(50) NOT NULL,
+
+    timestamp TIMESTAMP NOT NULL,
+
+    current_value DECIMAL(18,4),
+
+    daily_change DECIMAL(18,4),
+    daily_change_percent DECIMAL(10,4),
+
+    day_high DECIMAL(18,4),
+    day_low DECIMAL(18,4),
+
+    week_52_high DECIMAL(18,4),
+    week_52_low DECIMAL(18,4),
+
+    moving_average_20 DECIMAL(18,4),
+    moving_average_50 DECIMAL(18,4),
+    moving_average_200 DECIMAL(18,4),
+
+    rsi DECIMAL(10,4),
+    volatility DECIMAL(10,4),
+
+    trend VARCHAR(50),
+    market_strength DECIMAL(10,4),
+
+    bank_indicator_value DECIMAL(18,6),
+
+    gold_price DECIMAL(18,4),
+    silver_price DECIMAL(18,4),
+
+    additional_metrics JSONB,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================
+-- 17. MARKET SUMMARY
+-- Frontend-facing processed market information
+-- =========================================================
+
+CREATE TABLE market_summary (
+    id SERIAL PRIMARY KEY,
+
+    instrument_name VARCHAR(150) NOT NULL,
+    symbol VARCHAR(50) NOT NULL,
+    instrument_type VARCHAR(50) NOT NULL,
+
+    current_value DECIMAL(18,4),
+
+    change DECIMAL(18,4),
+    change_percent DECIMAL(10,4),
+
+    day_high DECIMAL(18,4),
+    day_low DECIMAL(18,4),
+
+    week_52_high DECIMAL(18,4),
+    week_52_low DECIMAL(18,4),
+
+    trend VARCHAR(50),
+    volatility DECIMAL(10,4),
+
+    market_status VARCHAR(50),
+
+    summary_timestamp TIMESTAMP NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
