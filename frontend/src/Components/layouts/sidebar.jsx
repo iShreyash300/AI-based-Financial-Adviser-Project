@@ -18,12 +18,18 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import BatchPredictionIcon from '@mui/icons-material/BatchPrediction';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 const menuItems = [
   {
     name: "Dashboard",
     icon: <DashboardOutlinedIcon />,
     path: "/dashboard",
+  },
+  {
+    name: "Investments",
+    icon: <TrendingUpIcon />,
+    path: "/investments",
   },
   {
     name: "Expenses",
@@ -87,7 +93,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     const current = menuItems.find(
-      (item) => item.path === location.pathname
+      (item) => item.path === location.pathname || (item.path !== "/" && location.pathname.startsWith(item.path))
     );
 
     if (current) {

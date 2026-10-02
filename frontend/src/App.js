@@ -34,6 +34,13 @@ const PredictionsPage = lazy(() => import("./components/pages/predictions"));
 const GoalsPage = lazy(() => import("./components/pages/goals"));
 const FinancialReportPage = lazy(() => import("./components/pages/financialReport"));
 
+const InvestmentsDashboard = lazy(() => import("./Components/pages/investments/moneyInvestments"));
+const StockRecommendationsPage = lazy(() => import("./Components/pages/investments/stockRecommendationsPage"));
+const GoldAnalysisPage = lazy(() => import("./Components/pages/investments/goldAnalysisPage"));
+const FDComparisonPage = lazy(() => import("./Components/pages/investments/fdComparisonPage"));
+const MyPortfolioPage = lazy(() => import("./Components/pages/investments/myPortfolioPage"));
+const AIRecommendationsPage = lazy(() => import("./Components/pages/investments/aiRecommendationsPage"));
+
 // ================= LOADER =================
 
 const Loader = () => {
@@ -157,6 +164,66 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <FinancialReportPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/investments"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <InvestmentsDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/investments/stocks"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <StockRecommendationsPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/investments/gold"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <GoldAnalysisPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/investments/fd"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <FDComparisonPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/investments/portfolio"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <MyPortfolioPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/investments/recommendations"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AIRecommendationsPage />
                   </Layout>
                 </ProtectedRoute>
               }
