@@ -1,548 +1,312 @@
- # AI-Based Financial Adviser Project
+﻿# AI-Based Financial Adviser Project — Brain
 
-## 1. Project Overview
+## 1. Project Overview & Core Purpose
 
-This repository contains a full-stack financial management application for small businesses and entrepreneurs. It combines a React-based frontend, an Express/Node.js backend, and a PostgreSQL database to provide:
+This is a full-stack **AI-based financial decision-support system** designed for small businesses and entrepreneurs. It analyzes a business's revenue, expenses, profit, and cash flow to understand its financial condition, then provides **personalized AI-based recommendations** on how the business can utilize surplus money through suitable investments or growth opportunities to generate additional income and support long-term growth.
 
-- user authentication and profile management
-- expense and revenue tracking
-- monthly budget planning
-- financial health scoring
-- revenue, expense, and cash-flow forecasting
-- goal tracking and growth recommendations
-- a machine-learning-oriented recommendation layer
-
-The product is designed to help users understand their business finances, identify risk areas, and plan actions based on historical transaction trends.
+### What the system does:
+- Tracks all financial activity: revenue, expenses, budgets, and goals
+- Computes a real-time **Financial Health Score** across 5 dimensions
+- Forecasts future expense, revenue, and cash flow using linear regression
+- Generates **AI-powered investment recommendations** (stocks, gold, FDs, mutual funds)
+- Guides users on surplus deployment for business growth
 
 ---
 
-## 2. Purpose and Product Goals
+## 2. Product Goals
 
-The application aims to give business owners a practical dashboard for:
-
-- monitoring cash inflows and outflows
-- comparing spending to budgets
-- identifying unhealthy expense ratios
-- predicting future financial behavior
-- receiving AI-style recommendations for saving and growth
+| Goal | Description |
+|---|---|
+| Financial Visibility | Real-time view of cash inflows and outflows |
+| Risk Detection | Identify overspending, poor budget utilization, and declining margins |
+| Predictive Intelligence | Forecast next-month financials using historical trend data |
+| Surplus Deployment | Recommend investments (stocks, gold, FDs) based on available surplus |
+| Growth Planning | Actionable growth-plan recommendations from financial data |
+| Goal Tracking | Set revenue/profit targets and measure progress over time |
 
 ---
 
 ## 3. Tech Stack
 
 ### Frontend
-
-- React 19
-- React Router DOM
-- Material UI (MUI)
-- Axios for API calls
-- Chart.js and react-chartjs-2 for visualizations
-- Create React App (react-scripts)
+- **React 19** (Create React App)
+- **React Router DOM v7** — lazy-loaded route-based SPA
+- **Material UI (MUI) v9**
+- **Axios** — API requests with JWT Authorization header
+- **Chart.js + react-chartjs-2** — Line, Bar, Pie charts
 
 ### Backend
+- **Node.js + Express.js** — REST API server
+- **PostgreSQL via `pg`** — raw SQL, no ORM
+- **JWT** — stateless auth (`Authorization: <token>`)
+- **bcryptjs** — password hashing
+- **Deployed on**: Render — `https://ai-based-financial-adviser-project-v1.onrender.com`
 
-- Node.js
-- Express.js
-- PostgreSQL via pg
-- JWT-based authentication
-- bcryptjs for password hashing
-- CORS and dotenv support
-
-### Data / ML Layer
-
-- Python
-- SQLAlchemy
-- pandas
-- PostgreSQL connection for analytics and recommendation pipelines
+### ML / Analytics Layer
+- **Python** — standalone analytics pipeline
+- **pandas + SQLAlchemy** — data processing and DB connection
+- Modules: `budget_advice`, `expense_reduction`, `investment_tip`, `risk_alert`, `saving_suggestion`
 
 ### Database
-
-- PostgreSQL (Neon-hosted in current setup)
-- SQL scripts under the database folder for schema, migration, and seed data
+- **PostgreSQL** — hosted on **Neon** (serverless)
+- Schema managed via raw SQL in `database/`
 
 ---
 
 ## 4. Repository Structure
 
-```text
+```
 AI-based-Financial-Adviser-Project/
 ├── backend/
-│   ├── app.js                  # Present but currently empty; server bootstrapping lives in server.js
-│   ├── server.js               # Main backend entry point
-│   ├── package.json            # Backend dependencies and scripts
-│   ├── .env                    # Local environment configuration
-│   ├── config/
-│   │   └── db.js               # PostgreSQL pool and connection helper
-│   ├── controllers/            # Business logic for each feature area
+│   ├── server.js               # Express entry point — mounts all routes
+│   ├── config/db.js            # PostgreSQL pool + connectDB()
+│   ├── middleware/authMiddleware.js  # JWT verification → req.user
+│   ├── controllers/
 │   │   ├── authController.js
-│   │   ├── budgetController.js
 │   │   ├── expenseController.js
+│   │   ├── revenueController.js
+│   │   ├── budgetController.js
 │   │   ├── financialHealthController.js
-│   │   ├── goalsController.js
-│   │   ├── growthPlanController.js
 │   │   ├── predictionController.js
-│   │   └── revenueController.js
-│   ├── middleware/
-│   │   └── authMiddleware.js   # JWT verification middleware
-│   ├── models/                 # Currently empty; schema is handled through raw SQL
-│   ├── routes/
-│   │   ├── authRoutes.js
-│   │   ├── budgetRoutes.js
-│   │   ├── expenseRoutes.js
-│   │   ├── financialHealthRoutes.js
-│   │   ├── goalsRoutes.js
-│   │   ├── growthPlanRoutes.js
-│   │   ├── predictionRoutes.js
-│   │   └── revenueRoutes.js
-│   ├── services/
-│   └── utils/
+│   │   ├── reportsController.js
+│   │   ├── goalsController.js
+│   │   └── growthPlanController.js
+│   └── routes/
+│       ├── authRoutes.js
+│       ├── expenseRoutes.js
+│       ├── revenueRoutes.js
+│       ├── budgetRoutes.js
+│       ├── financialHealthRoutes.js
+│       ├── predictionRoutes.js
+│       ├── reportRoutes.js
+│       ├── goalsRoutes.js
+│       └── growthPlanRoutes.js
 ├── frontend/
-│   ├── package.json            # Frontend dependencies and scripts
-│   ├── public/
 │   └── src/
-│       ├── App.js              # Application router and route setup
-│       ├── App.test.js
-│       ├── index.js
-│       ├── Components/
-│       │   ├── Charts/         # Revenue, bar, pie chart components
-│       │   ├── layouts/        # Header, sidebar, app layout
-│       │   ├── pages/          # Route-level pages
-│       │   └── ui/             # Reusable cards and score widgets
-│       ├── routers/
-│       │   └── ProtectedRoute.jsx
-│       ├── S_Data/
-│       └── assetes/
+│       ├── App.js              # All lazy-loaded routes
+│       ├── routers/ProtectedRoute.jsx
+│       └── Components/
+│           ├── layouts/        # Navbar, Sidebar, Layout wrapper
+│           ├── pages/
+│           │   ├── deshboardPage.jsx
+│           │   ├── expenses.jsx
+│           │   ├── revenue.jsx
+│           │   ├── budget.jsx
+│           │   ├── predictions.jsx
+│           │   ├── goals.jsx
+│           │   ├── financialReport.jsx
+│           │   ├── profilePage.jsx
+│           │   ├── loginPage.jsx
+│           │   ├── signupPage.jsx
+│           │   ├── forgetPassword.jsx
+│           │   ├── homePage.jsx
+│           │   └── investments/
+│           │       ├── moneyInvestments.jsx
+│           │       ├── stockRecommendationsPage.jsx
+│           │       ├── goldAnalysisPage.jsx
+│           │       ├── fdComparisonPage.jsx
+│           │       ├── myPortfolioPage.jsx
+│           │       └── aiRecommendationsPage.jsx
+│           └── ui/
+│               └── FinancialHealthScoreCard.jsx
 ├── database/
-│   ├── schema.sql              # Main relational schema
-│   ├── migration.sql           # Migration-style SQL file
-│   └── seed.sql                # Seed data for sample users and transactions
+│   ├── schema.sql
+│   ├── migration.sql
+│   └── seed.sql
 ├── ml_model/
-│   ├── database/
-│   │   └── db_connection.py
 │   ├── recommendations/
-│   │   ├── budget_advice.py
-│   │   ├── expense_reduction.py
-│   │   ├── investment_tip.py
-│   │   ├── risk_alert.py
-│   │   └── saving_suggestion.py
 │   ├── training/
-│   │   ├── train_expense_model.py
-│   │   └── train_revenue_model.py
-│   ├── trained_models/
 │   ├── utils/
-│   │   ├── build_financial_metrics.py
-│   │   ├── profit_prediction.py
-│   │   └── recommendation_engine.py
-│   └── __init__.py
-├── README.md
-└── brain.md
+│   └── database/db_connection.py
+├── brain.md          ← Primary project reference
+├── architecture.md   ← System architecture deep-dive
+├── PRD.md            ← Product Requirements Document
+└── README.md
 ```
 
-### Key Folder Notes
+---
 
-- backend/controllers contains the core domain logic for CRUD operations and analytics.
-- backend/routes exposes the public API surface.
-- frontend/src/Components/pages contains the route pages such as login, dashboard, expenses, budget, revenue, predictions, goals, and profile.
-- database stores the relational schema and initial data.
-- ml_model is a separate analytics/recommendation pipeline that connects to the same database and can generate recommendation outputs.
+## 5. Frontend Routes
+
+| Route | Component | Protected | Description |
+|---|---|---|---|
+| `/` | homePage.jsx | No | Landing page |
+| `/login` | loginPage.jsx | No | JWT login |
+| `/signup` | signupPage.jsx | No | Registration |
+| `/forgetPassword` | forgetPassword.jsx | No | Password recovery |
+| `/dashboard` | deshboardPage.jsx | Yes | KPI cards + 4 charts |
+| `/expenses` | expenses.jsx | Yes | Expense CRUD |
+| `/revenues` | revenue.jsx | Yes | Revenue CRUD |
+| `/budget` | budget.jsx | NO ⚠️ | Budget management (missing ProtectedRoute) |
+| `/predictions` | predictions.jsx | Yes | Forecasts |
+| `/goals` | goals.jsx | Yes | Goal tracking |
+| `/reports` | financialReport.jsx | Yes | Full financial report |
+| `/profile` | profilePage.jsx | Yes | User profile |
+| `/investments` | moneyInvestments.jsx | Yes | Investments hub |
+| `/investments/stocks` | stockRecommendationsPage.jsx | Yes | Stock picks |
+| `/investments/gold` | goldAnalysisPage.jsx | Yes | Gold analysis |
+| `/investments/fd` | fdComparisonPage.jsx | Yes | FD comparison |
+| `/investments/portfolio` | myPortfolioPage.jsx | Yes | Portfolio tracker |
+| `/investments/recommendations` | aiRecommendationsPage.jsx | Yes | AI recommendations |
 
 ---
 
-## 5. Frontend Architecture
+## 6. API Surface
 
-The frontend is a React single-page application with route-based pages.
+### Auth — `/api/auth`
+- POST `/api/auth/signup`
+- POST `/api/auth/login`
+- GET `/api/auth/profile`
+- PUT `/api/auth/profile`
 
-### Routing Overview
+### Expenses — `/api/expenses`
+- GET / POST / DELETE `:id`
 
-Routes are declared in [frontend/src/App.js](frontend/src/App.js) and include:
+### Revenue — `/api/revenues`
+- GET / POST / PUT `:id` / DELETE `:id`
 
-- `/` -> landing/home page
-- `/login` -> authentication
-- `/signup` -> registration
-- `/forgetPassword` -> password recovery UI
-- `/dashboard` -> protected dashboard
-- `/profile` -> protected profile page
-- `/expenses` -> protected expense tracker
-- `/budget` -> budget management
-- `/revenues` -> revenue management
-- `/predictions` -> forecasting page
-- `/goals` -> goal planning page
+### Budgets — `/api/budgets`
+- GET / POST / PUT `:id` / DELETE `:id`
 
-### Layout Structure
+### Financial Health — `/api/financial-health`
+- GET (computes 5-dimension score)
 
-- [frontend/src/Components/layouts/index.jsx](frontend/src/Components/layouts/index.jsx) wraps pages with a shared header and sidebar.
-- [frontend/src/routers/ProtectedRoute.jsx](frontend/src/routers/ProtectedRoute.jsx) blocks access to protected screens unless a token exists.
+### Predictions — `/api/predictions`
+- GET `/api/predictions/expense`
+- GET `/api/predictions/revenue`
+- GET `/api/predictions/cashflow`
 
-### UI Composition
+### Reports — `/api/reports`
+- GET `/api/reports/summary` — KPI data
+- GET `/api/reports/charts` — chart data
+- GET `/api/reports/full` — full report
+- GET `/api/reports/pdf` — PDF export
+- Query params: `?filter=this_month|last_3_months|last_6_months|last_12_months|custom&fromDate=&toDate=`
 
-- [frontend/src/Components/pages/deshboardPage.jsx](frontend/src/Components/pages/deshboardPage.jsx) renders summary cards and charts.
-- [frontend/src/Components/ui/FinancialHealthScoreCard.jsx](frontend/src/Components/ui/FinancialHealthScoreCard.jsx) displays the computed financial health status.
-- Different feature pages use Axios to call the backend directly using JWT tokens stored in localStorage.
+### Goals — `/api/goals`
+- GET / POST / PUT `:id` / DELETE `:id`
 
----
+### Growth Plan — `/api/growth-plan`
+- GET `/api/growth-plan/recommendations`
 
-## 6. Backend Architecture
-
-The backend is a modular Express application centered around route handlers and database-backed controllers.
-
-### Entry Point
-
-- [backend/server.js](backend/server.js) starts the Express server, enables CORS, parses JSON, connects to PostgreSQL, and mounts all API routers.
-
-### Request Flow
-
-1. A frontend request hits an Express route.
-2. The route delegates to a controller.
-3. The controller reads or writes data using the shared PostgreSQL pool.
-4. The response is sent back as JSON.
-5. The frontend updates local state and displays the result.
-
-### Main Backend Modules
-
-- auth routes and controller manage signup, login, and profile access.
-- expense, revenue, and budget controllers handle CRUD operations.
-- financialHealthController computes a score from expense, revenue, and budget values.
-- predictionController calculates simple linear-regression-based forecasts.
-- growthPlanController generates actionable recommendations from live financial data.
-- goalsController manages goal progress and status updates.
+### Standard Response Shape
+```json
+{ "success": true, "data": { ... }, "message": "..." }
+```
 
 ---
 
-## 7. API Routes and Data Flow
+## 7. Authentication Flow
 
-### Authentication
+1. User submits credentials from React UI
+2. POST `/api/auth/login` → bcrypt verify → JWT issued
+3. Frontend stores JWT in `localStorage` as `"token"`
+4. Protected API calls send `Authorization: <token>`
+5. `authMiddleware.js` verifies JWT → sets `req.user = { id, email }`
+6. `ProtectedRoute.jsx` redirects to `/login` if no token
 
-- POST /api/auth/signup
-- POST /api/auth/login
-- GET /api/auth/profile
-- PUT /api/auth/profile
-
-### Expenses
-
-- GET /api/expenses
-- POST /api/expenses
-- DELETE /api/expenses/:id
-
-### Budgets
-
-- GET /api/budgets
-- POST /api/budgets
-- PUT /api/budgets/:id
-- DELETE /api/budgets/:id
-
-### Revenue
-
-- GET /api/revenues
-- POST /api/revenues
-- PUT /api/revenues/:id
-- DELETE /api/revenues/:id
-
-### Predictions
-
-- GET /api/predictions/expense
-- GET /api/predictions/revenue
-- GET /api/predictions/cashflow
-
-### Financial Health
-
-- GET /api/financial-health
-
-### Goals
-
-- GET /api/goals
-- POST /api/goals
-- PUT /api/goals/:id
-- DELETE /api/goals/:id
-
-### Growth Recommendations
-
-- GET /api/growth-plan/recommendations
-
-### Data Flow Pattern
-
-- Frontend stores a JWT token in localStorage after login.
-- Protected pages attach the token as an Authorization header.
-- The backend middleware validates the token and populates req.user.
-- Controllers resolve data from PostgreSQL and return structured JSON.
-- The frontend renders cards, charts, and data tables based on the API response.
+> ⚠️ localStorage auth is acceptable for demos but not production-secure.
 
 ---
 
-## 8. Database Models and Relationships
+## 8. Database Schema
 
-The project uses PostgreSQL with raw SQL queries rather than a dedicated Sequelize model layer. The schema is defined in [database/schema.sql](database/schema.sql).
-
-### Core Tables
-
-- users
-  - primary account owner record
-  - one-to-many with departments, expenses, revenues, budgets, goals, predictions, and recommendations
-- departments
-  - belongs to a user
-  - can be linked to expenses, revenues, and budgets
-- expense_categories
-  - lookup table for categories such as Salary, Rent, Ads Spend, Cloud Hosting, Inventory, and Software Tools
-- expenses
-  - stores individual business expense transactions
-  - linked to users, departments, and expense categories
-- revenue
-  - stores income entries
-  - linked to users and departments
-- budgets
-  - stores planned monthly budgets by department and year/month
-- financial_health_scores
-  - stores computed health metrics for historical analysis
-- predictions
-  - stores forecast values and confidence scores for future expense/revenue/cash-flow
-- alerts
-  - intended for warnings and reminders
-- goals
-  - stores business targets and progress toward them
-- ai_recommendations
-  - stores AI-generated advice items
-
-### Relationship Summary
-
-- users -> departments (1:N)
-- users -> expenses (1:N)
-- users -> revenue (1:N)
-- users -> budgets (1:N)
-- users -> goals (1:N)
-- users -> predictions (1:N)
-- users -> ai_recommendations (1:N)
-- departments -> expenses/revenue/budgets (1:N)
-- expense_categories -> expenses (1:N)
+| Table | Purpose |
+|---|---|
+| users | Root entity — account holder |
+| departments | Business departments |
+| expense_categories | Lookup: Salary, Rent, Ads, Cloud, Inventory, Software |
+| expenses | Expense transactions |
+| revenue | Income entries |
+| budgets | Monthly planned budgets per department |
+| financial_health_scores | Computed health metrics |
+| predictions | Forecast values + confidence scores |
+| goals | Business targets with progress tracking |
+| ai_recommendations | AI-generated advice |
+| alerts | Warnings and reminders |
 
 ---
 
-## 9. Authentication Flow
+## 9. Resolved Issues
 
-1. A user submits signup or login information from the React UI.
-2. The frontend sends the data to /api/auth/signup or /api/auth/login.
-3. The backend checks the PostgreSQL users table.
-4. On signup, the password is hashed with bcrypt and stored.
-5. On login, the password is verified and a JWT is issued.
-6. The frontend stores the JWT in localStorage.
-7. Protected routes require a token and use the middleware to validate it.
-8. The authenticated user ID is used in subsequent database queries.
-
-### Notes
-
-- The JWT secret is expected from the environment.
-- The frontend currently persists auth state using localStorage rather than a more secure session pattern.
+| Issue | Fix |
+|---|---|
+| Dashboard showed ₹0 (defaulted to "This Month" with no Oct 2026 data) | Changed default filter to `?filter=last_3_months` in deshboardPage.jsx |
+| `financial_health_scores.message` column did not exist | Updated query to remove missing column |
+| Goals table CHECK constraint too restrictive | Removed CHECK constraint |
+| Dashboard was static (hardcoded charts) | Rebuilt with dynamic `/api/reports/summary` + `/api/reports/charts` |
+| All frontend API URLs pointed to localhost | Updated 13 files to Render URL |
 
 ---
 
-## 10. Key Modules and Features
+## 10. Known Open Issues
 
-### Expense Management
-
-- Add, view, and delete expenses
-- Supports category, department, payment method, frequency, and date
-- Categories are resolved dynamically and can be created automatically on insert
-
-### Revenue Management
-
-- Track revenue sources and related departments
-- Supports editing and deletion
-
-### Budget Management
-
-- Create monthly departmental budgets
-- Prevent duplicate budgets for the same department/month/year
-- Compare actual spending against planned budgets
-
-### Financial Health Scoring
-
-- Computes profitability, expense ratio, revenue growth, budget efficiency, and cash-flow metrics
-- Produces an overall score and status message
-
-### Predictions
-
-- Uses linear regression over recent monthly history
-- Forecasts expense, revenue, and cash flow
-- Includes confidence scores and recommendations
-
-### Goals and Growth Planning
-
-- Create and track target-based goals
-- Estimate progress from revenue and expense movements
-- Generate recommendations based on current financial position
+| Issue | Priority |
+|---|---|
+| `/budget` route not protected | Medium |
+| Hardcoded Render URL in 13 files (no central api client) | Medium |
+| localStorage auth | Low (demo acceptable) |
+| ML model not integrated into runtime | Low |
+| No automated test suite | Medium |
+| `backend/app.js` is empty (entry point is server.js) | Low |
 
 ---
 
-## 11. Environment Variables
-
-The backend relies on environment variables for local configuration.
-
-### Expected Variables
-
-- DATABASE_URL
-  - PostgreSQL connection string for the app and analytics layer
-- JWT_SECRET
-  - Secret used to sign and verify JWTs
-- PORT
-  - Port for the Express server (default is 5000)
-
-### Security Note
-
-- Do not commit secrets to the repository.
-- The current project includes a real-looking connection string in local files; this should be rotated or moved to a secure environment for production.
-
-### Frontend Notes
-
-- The UI currently uses hardcoded API URLs such as http://localhost:5000 rather than a centralized environment variable.
-
----
-
-## 12. Important Commands
-
-### Install Dependencies
+## 11. Developer Commands
 
 ```bash
+# Backend
 cd backend && npm install
-cd ../frontend && npm install
-```
+npm run dev      # development (nodemon)
+npm start        # production
 
-### Run Backend (development)
-
-```bash
-cd backend
-npm run dev
-```
-
-### Run Backend (production-style start)
-
-```bash
-cd backend
-npm start
-```
-
-### Run Frontend
-
-```bash
-cd frontend
-npm start
-```
-
-### Build Frontend
-
-```bash
-cd frontend
-npm run build
-```
-
-### Run Tests
-
-```bash
-cd frontend
+# Frontend
+cd frontend && npm install
+npm start        # http://localhost:3000
+npm run build    # production bundle
 npm test
+
+# Database
+# Run database/schema.sql → database/seed.sql against your PostgreSQL instance
 ```
 
-> Testing coverage is currently minimal; the frontend contains a default CRA test file, but no comprehensive app-level test suite is in place.
+---
+
+## 12. Deployment
+
+- **Backend**: Render — `https://ai-based-financial-adviser-project-v1.onrender.com`
+- **Database**: Neon PostgreSQL — connected via `DATABASE_URL` env var
+- **Frontend**: Build with `npm run build`, deploy static bundle
+- **Env vars needed**: `DATABASE_URL`, `JWT_SECRET`, `PORT`
 
 ---
 
-## 13. Debugging and Testing Notes
-
-### Backend Debugging
-
-- Start the backend with npm run dev for automatic restarts during development.
-- Check console logs for database connection and controller errors.
-- The PostgreSQL connection is initialized when the server starts.
-
-### Frontend Debugging
-
-- Browser dev tools are useful for inspecting API responses and localStorage auth state.
-- The app uses React Router and lazy-loaded pages, so route issues are easiest to spot via console errors.
-
-### Database Debugging
-
-- Use the SQL scripts in database/ to recreate or reset the schema.
-- The backend uses direct SQL queries and expects the tables to exist.
-- The ml_model scripts also connect directly to PostgreSQL and can be used to inspect or debug financial metrics.
-
-### Current Testing Status
-
-- There is no mature automated test suite for the backend.
-- The frontend has CRA test support but no meaningful feature tests yet.
-
----
-
-## 14. Deployment Process
-
-### Suggested Deployment Flow
-
-1. Provision a managed PostgreSQL database.
-2. Set environment variables for the backend service:
-   - DATABASE_URL
-   - JWT_SECRET
-   - PORT
-3. Deploy the backend to a Node.js hosting platform.
-4. Build the frontend and deploy it to a static host or frontend platform.
-5. Update the frontend API base URL from localhost to the deployed backend URL.
-
-### Production Considerations
-
-- Replace hardcoded localhost API endpoints with environment-driven configuration.
-- Use a secure cookie or a more hardened token strategy instead of localStorage if possible.
-- Add proper CORS configuration for the production domain.
-- Add automated deployment and environment validation steps.
-
----
-
-## 15. Developer Notes and Known Issues
-
-### Known / Likely Improvement Areas
-
-- The frontend currently uses hardcoded API URLs such as http://localhost:5000. This should be centralized.
-- [backend/app.js](backend/app.js) is present but empty; the actual server bootstrapping is in [backend/server.js](backend/server.js).
-- The project mixes direct SQL queries and a lightweight manual setup; there is no unified ORM model layer.
-- The root package.json is effectively empty and does not provide convenience scripts for running the full stack together.
-- The frontend route for /budget is not wrapped in ProtectedRoute unlike most other authenticated pages.
-- Auth state management relies on localStorage, which is acceptable for demo purposes but is not the most secure production approach.
-- The ML module uses its own database connection string and is not yet fully integrated into the main runtime flow.
-
-### Resolved Issues
-- **Dynamic Dashboard**: The dashboard previously rendered static charts (with duplicate RevenueCharts) and hardcoded KPI cards. It is now fully dynamic, rendering 4 distinct real-time charts (Revenue & Expense Trend line, Revenue vs Expenses bar, Category Breakdown pie, and Top Categories bar) and KPI cards loaded from `/api/reports/summary` and `/api/reports/charts`.
-- **Database Schema Mismatch (message column)**: Fixed query error where the backend requested a non-existent `message` column in the `financial_health_scores` table.
-- **Goals Table Constraints**: Removed restrictive CHECK constraint on the `status` column of the `goals` table to allow dynamic status labels ('Completed', 'On Track', 'At Risk') to be mapped properly. Fixed `goal.title` column query issues.
-
-### Maintenance Tips
-
-- Keep the SQL schema in sync with the actual controller expectations.
-- If new routes are added, update the frontend pages and the route documentation.
-- Keep any new API endpoints consistent with the existing response shape: { success, data, message }.
-
----
-
-## 16. Visual Project Flow Diagram
+## 13. System Flow
 
 ```mermaid
-flowchart LR
-    A[User] --> B[React Frontend]
-    B --> C[Authentication Pages]
-    B --> D[Dashboard / Expense / Budget / Revenue / Goals / Predictions]
-    C --> E[Express API]
-    D --> E
-    E --> F[JWT Auth Middleware]
-    F --> G[Controllers]
-    G --> H[PostgreSQL Database]
-    G --> I[ML Recommendation Pipeline]
-    I --> H
-    H --> J[Charts / KPI Cards / Recommendations]
-    J --> B
+flowchart TD
+    U[Business Owner] --> FE[React SPA\nlocalhost:3000]
+    FE --> Auth[Login / Signup]
+    FE --> Dash[Dashboard]
+    FE --> Fin[Expenses / Revenue / Budget / Goals]
+    FE --> Inv[Investments Module]
+    FE --> Pred[Predictions / Reports]
+
+    Auth --> API[Express REST API\nRender]
+    Dash --> API
+    Fin --> API
+    Inv --> API
+    Pred --> API
+
+    API --> MW[JWT Middleware]
+    MW --> Ctrl[Controllers]
+    Ctrl --> DB[(PostgreSQL\nNeon)]
+    Ctrl --> ML[Python ML Pipeline]
+    ML --> DB
+    DB --> Ctrl
+    Ctrl --> FE
 ```
 
 ---
 
-## 17. Recommended Next Steps for Developers
-
-- centralize API configuration in one frontend utility module
-- add a reusable auth service and request interceptor
-- introduce a formal testing strategy for both frontend and backend
-- replace hardcoded environment values with proper deployment variables
-- standardize error handling and response shapes across all controllers
-- consider consolidating the ML pipeline into the main application workflow
-
-This document should serve as the primary onboarding reference for understanding the application architecture, the data model, and the main development workflow.
+*Last updated: 2026-10-02. Primary onboarding and reference document for the project.*

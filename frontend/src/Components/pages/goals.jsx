@@ -47,7 +47,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const API_BASE = "https://ai-based-financial-adviser-project.onrender.com/api";
+const API_BASE = "https://ai-based-financial-adviser-project-v1.onrender.com/api";
 const GOALS_URL = `${API_BASE}/goals`;
 const REC_URL = `${API_BASE}/growth-plan/recommendations`;
 
@@ -103,7 +103,7 @@ const iconForType = (iconName) => {
 };
 
 const fmt = (n) =>
-  Number(n).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  Number(n).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
 const getGoalTitle = (goal = {}) => goal?.goal_title || goal?.title || "Untitled Goal";
 

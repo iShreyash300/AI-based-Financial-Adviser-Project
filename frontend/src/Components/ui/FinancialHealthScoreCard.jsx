@@ -166,7 +166,7 @@ const FinancialHealthScoreCard = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await axios.get("https://ai-based-financial-adviser-project.onrender.com/api/financial-health", {
+      const res = await axios.get("https://ai-based-financial-adviser-project-v1.onrender.com/api/financial-health", {
         headers: { Authorization: token },
       });
       if (res.data?.success) {

@@ -35,7 +35,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend);
 
-const API_BASE = "https://ai-based-financial-adviser-project.onrender.com/api/reports";
+const API_BASE = "https://ai-based-financial-adviser-project-v1.onrender.com/api/reports";
 
 const reportFilters = [
     { value: "this_month", label: "This Month" },
@@ -51,9 +51,9 @@ const getAuthHeader = () => {
 };
 
 const currency = (value) =>
-    Number(value || 0).toLocaleString("en-US", {
+    Number(value || 0).toLocaleString("en-IN", {
         style: "currency",
-        currency: "USD",
+        currency: "INR",
         maximumFractionDigits: 0,
     });
 

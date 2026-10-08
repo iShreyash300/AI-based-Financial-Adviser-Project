@@ -18,12 +18,22 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import BatchPredictionIcon from '@mui/icons-material/BatchPrediction';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PieChartOutlinedIcon from '@mui/icons-material/PieChartOutlined';
 
 const menuItems = [
   {
     name: "Dashboard",
     icon: <DashboardOutlinedIcon />,
     path: "/dashboard",
+  },
+  {
+    name: "Investments",
+    icon: <TrendingUpIcon />,
+    path: "/investments",
+    subItems: [
+      { name: "Investment Allocation", path: "/investments/allocation", icon: <PieChartOutlinedIcon sx={{ fontSize: 14 }} /> },
+    ],
   },
   {
     name: "Expenses",
@@ -70,7 +80,7 @@ const Sidebar = () => {
     if (!token) return;
 
     axios
-      .get("https://ai-based-financial-adviser-project.onrender.com/api/auth/profile", {
+      .get("https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/profile", {
         headers: { Authorization: token },
       })
       .then((res) => setUser(res.data.user || null))
@@ -87,9 +97,8 @@ const Sidebar = () => {
 
   useEffect(() => {
     const current = menuItems.find(
-      (item) => item.path === location.pathname
+      (item) => item.path === location.pathname || (item.path !== "/" && location.pathname.startsWith(item.path))
     );
-
     if (current) {
       setActive(current.name);
     }
@@ -195,86 +204,60 @@ const Sidebar = () => {
         }}
       >
         {menuItems.map((item) => (
-          <Stack
-            key={item.name}
-            direction={{ xs: "column", md: "row" }}
-            alignItems="center"
-            spacing={{ xs: 3, md: 2 }}
-            onClick={() => {
-              if (item.path) {
-                navigate(item.path);
-              }
-              setActive(item.name);
-            }}
-            sx={{
-              width: "100%",
-              py: 1.5,
-              px: {
-                xs: 0,
-                md: 2,
-              },
-              borderRadius: "14px",
-              cursor: "pointer",
-              transition: "0.3s",
-              justifyContent: { xs: "center", md: "flex-start" },
-
-              background:
-                active === item.name
-                  ? {
-                    xs: "transparent",
-                    md: "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)",
-                  }
-                  : "transparent",
-
-              color:
-                active === item.name
-                  ? {
-                    xs: "#7B61FF",
-                    md: "#fff",
-                  }
-                  : {
-                    xs: "#999",
-                    md: "#555",
-                  },
-
-              "&:hover": {
-                background:
-                  active === item.name
-                    ? {
-                      xs: "transparent",
-                      md: "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)",
-                    }
-                    : { xs: "transparent", md: "#f5f5ff" },
-              },
-            }}
-          >
-            <Box
+          <React.Fragment key={item.name}>
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              alignItems="center"
+              spacing={{ xs: 3, md: 2 }}
+              onClick={() => {
+                if (item.path) navigate(item.path);
+                setActive(item.name);
+              }}
               sx={{
-                fontSize: {
-                  xs: "24px",
-                  md: "20px",
-                },
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                width: "100%", py: 1.5,
+                px: { xs: 0, md: 2 },
+                borderRadius: "14px", cursor: "pointer", transition: "0.3s",
+                justifyContent: { xs: "center", md: "flex-start" },
+                background: active === item.name ? { xs: "transparent", md: "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)" } : "transparent",
+                color: active === item.name ? { xs: "#7B61FF", md: "#fff" } : { xs: "#999", md: "#555" },
+                "&:hover": { background: active === item.name ? { xs: "transparent", md: "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)" } : { xs: "transparent", md: "#f5f5ff" } },
               }}
             >
-              {item.icon}
-            </Box>
+              <Box sx={{ fontSize: { xs: "24px", md: "20px" }, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {item.icon}
+              </Box>
+              <Typography sx={{ display: { xs: "none", md: "block" }, fontSize: "15px", fontWeight: 600 }}>
+                {item.name}
+              </Typography>
+            </Stack>
 
-            <Typography
-              sx={{
-                display: {
-                  xs: "none",
-                  md: "block",
-                },
-                fontSize: "15px",
-                fontWeight: 600,
-              }}
-            >
-              {item.name}
-            </Typography>
-          </Stack>
+            {/* Sub-items — desktop only, visible when parent is active */}
+            {item.subItems && active === item.name && (
+              <Stack sx={{ display: { xs: "none", md: "flex" }, pl: 2, gap: 0.5, mb: 0.5 }}>
+                {item.subItems.map((sub) => (
+                  <Stack
+                    key={sub.name}
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
+                    onClick={() => navigate(sub.path)}
+                    sx={{
+                      py: 1, px: 2, borderRadius: "10px", cursor: "pointer",
+                      background: location.pathname === sub.path ? "#EEF2FF" : "transparent",
+                      color: location.pathname === sub.path ? "#6366F1" : "#888",
+                      transition: "0.2s",
+                      "&:hover": { background: "#EEF2FF", color: "#6366F1" },
+                    }}
+                  >
+                    {sub.icon}
+                    <Typography sx={{ fontSize: "13px", fontWeight: location.pathname === sub.path ? 700 : 500 }}>
+                      {sub.name}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            )}
+          </React.Fragment>
         ))}
       </Stack>
 

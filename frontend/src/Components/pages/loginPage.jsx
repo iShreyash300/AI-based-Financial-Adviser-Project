@@ -78,7 +78,7 @@ const LoginPage = () => {
 
         try {
             const response = await axios.post(
-                "https://ai-based-financial-adviser-project.onrender.com/api/auth/login",
+                "https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/login",
                 {
                     email: formData.email,
                     password: formData.password,
