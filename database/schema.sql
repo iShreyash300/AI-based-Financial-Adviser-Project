@@ -311,9 +311,8 @@ CREATE TABLE financial_health_scores (
     profitability_score DECIMAL(5,2) CHECK (profitability_score BETWEEN 0 AND 100),
     expense_ratio_score DECIMAL(5,2) CHECK (expense_ratio_score BETWEEN 0 AND 100),
     revenue_growth_score DECIMAL(5,2) CHECK (revenue_growth_score BETWEEN 0 AND 100),
-    budget_efficiency_score DECIMAL(5,2) CHECK (budget_efficiency_score BETWEEN 0 AND 100),
+    budget_efficiency_score DECIMAL(5,2) CHECK (budget_efficiency_score BETWEEN 0 AND 100)
 
-    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
