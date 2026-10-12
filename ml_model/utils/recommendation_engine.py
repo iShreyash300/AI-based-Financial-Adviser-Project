@@ -91,7 +91,8 @@ def calculate_priority(rec, financial_metrics):
 
 # -------------------------
 # === Main Engine ===
-# -------------------------
+# ------------------------- 
+user_id = 1  # Example user_id for testing
 
 def generate_and_store_recommendations(user_id):
 

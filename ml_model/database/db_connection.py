@@ -1,5 +1,5 @@
 import sys
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import pandas as pd
 
 
@@ -7,9 +7,7 @@ import pandas as pd
 # === Database Connection ===
 # -------------------------
 
-DATABASE_URL = "postgresql://neondb_owner:npg_wpNc8tA3aWov@ep-polished-haze-aolhlk96-pooler.c-2.ap-southeast-1.aws.neon.tech/financial-advisor-v2?sslmode=require&channel_binding=require"
-
-# DATABASE_URL = "postgresql://postgres:THIS_IS_DEFINITELY_WRONG_123456@localhost:5432/financial_advisor"
+DATABASE_URL = "postgresql://neondb_owner:npg_wpNc8tA3aWov@ep-polished-haze-aolhlk96-pooler.c-2.ap-southeast-1.aws.neon.tech/financial-adviser-v2?sslmode=require&channel_binding=require"
 
 try:
     engine = create_engine(DATABASE_URL)
@@ -21,7 +19,6 @@ except Exception as e:
 # -------------------------
 # === Database Functions ===
 # -------------------------
-# -- test connection
 
 def test_connection():
     try:
@@ -32,14 +29,31 @@ def test_connection():
         sys.exit(1)
 
 
-# -- fetch data
-
-def fetch_data(query):
+def fetch_data(query, params=None):
     try:
-        return pd.read_sql(query, engine)
+        with engine.connect() as connection:
+            return pd.read_sql(
+                text(query),
+                connection,
+                params=params
+            )
     except Exception as e:
         print(f"[ERROR] Failed to fetch data: {e}")
-        return None
+        raise
+
+
+def execute_query(query, params=None):
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(
+                text(query),
+                params or {}
+            )
+            connection.commit()
+            return result
+    except Exception as e:
+        print(f"[ERROR] Failed to execute query: {e}")
+        raise
 
 
 # -------------------------
@@ -47,22 +61,3 @@ def fetch_data(query):
 # -------------------------
 
 test_connection()
-
-tables = [
-    "users",
-    "departments",
-    "expense_categories",
-    "expenses",
-    "revenue",
-    "budgets"
-]
-
-print("\n=== TABLE SHAPES ===")
-
-for table in tables:
-    df = fetch_data(f"SELECT * FROM {table};")
-
-    if df is not None:
-        print(f"{table:<20} {df.shape}")
-    else:
-        print(f"{table:<20} FAILED")
