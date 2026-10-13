@@ -1,4 +1,4 @@
-﻿# Architecture — AI-Based Financial Adviser System
+# Architecture — AI-Based Financial Adviser System
 
 ## 1. High-Level Architecture
 

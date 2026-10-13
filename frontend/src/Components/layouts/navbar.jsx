@@ -1,6 +1,6 @@
 // eslint-disable-next-line 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
 
 import {
     AppBar,
@@ -84,10 +84,8 @@ const Navbar = ({ isLogin }) => {
 
         if (!token) return;
 
-        axios
-            .get("https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/profile", {
-                headers: { Authorization: token },
-            })
+        api
+            .get("/auth/profile")
             .then((res) => {
                 setUser(res.data.user || null);
             })

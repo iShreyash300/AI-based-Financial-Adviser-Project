@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
     Box,
     Button,
@@ -35,7 +35,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Tooltip, Legend);
 
-const API_BASE = "https://ai-based-financial-adviser-project-v1.onrender.com/api/reports";
+const REPORTS_ENDPOINT = "/reports";
 
 const reportFilters = [
     { value: "this_month", label: "This Month" },
@@ -44,11 +44,6 @@ const reportFilters = [
     { value: "last_12_months", label: "Last 12 Months" },
     { value: "custom", label: "Custom Range" },
 ];
-
-const getAuthHeader = () => {
-    const token = localStorage.getItem("token");
-    return token ? { Authorization: token } : {};
-};
 
 const currency = (value) =>
     Number(value || 0).toLocaleString("en-IN", {
@@ -65,6 +60,7 @@ const FinancialReportPage = () => {
     const [insights, setInsights] = useState([]);
     const [periodLabel, setPeriodLabel] = useState("");
     const [loading, setLoading] = useState(true);
+    const [downloading, setDownloading] = useState(false);
     const [error, setError] = useState("");
 
 
@@ -100,9 +96,9 @@ const FinancialReportPage = () => {
         try {
             const query = buildQuery();
             const [summaryRes, chartsRes, insightsRes] = await Promise.all([
-                axios.get(`${API_BASE}/summary?${query}`, { headers: getAuthHeader() }),
-                axios.get(`${API_BASE}/charts?${query}`, { headers: getAuthHeader() }),
-                axios.get(`${API_BASE}/insights?${query}`, { headers: getAuthHeader() }),
+                api.get(`${REPORTS_ENDPOINT}/summary?${query}`),
+                api.get(`${REPORTS_ENDPOINT}/charts?${query}`),
+                api.get(`${REPORTS_ENDPOINT}/insights?${query}`),
             ]);
 
             if (summaryRes.data.success) {
@@ -234,10 +230,12 @@ const FinancialReportPage = () => {
     }, [charts]);
 
     const downloadPdf = async () => {
+        if (downloading) return;
+        setDownloading(true);
+
         try {
             const query = buildQuery();
-            const response = await axios.get(`${API_BASE}/download?${query}`, {
-                headers: getAuthHeader(),
+            const response = await api.get(`${REPORTS_ENDPOINT}/download?${query}`, {
                 responseType: "blob",
             });
             const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
@@ -250,6 +248,8 @@ const FinancialReportPage = () => {
             window.URL.revokeObjectURL(url);
         } catch (downloadError) {
             setError(downloadError.response?.data?.message || "Unable to download PDF.");
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -303,11 +303,12 @@ const FinancialReportPage = () => {
                     <Grid item xs={12} md={4}>
                         <Button
                             variant="outlined"
-                            startIcon={<DownloadIcon />}
+                            startIcon={downloading ? <CircularProgress size={18} color="inherit" /> : <DownloadIcon />}
                             onClick={downloadPdf}
+                            disabled={downloading}
                             fullWidth
                         >
-                            Download PDF
+                            {downloading ? "Downloading..." : "Download PDF"}
                         </Button>
                     </Grid>
                 </Grid>

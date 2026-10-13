@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
   Box,
   Card,
@@ -40,12 +40,7 @@ ChartJS.register(
   BarElement, ArcElement, Title, ChartTooltip, Legend, Filler
 );
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-const API = "https://ai-based-financial-adviser-project-v1.onrender.com/api";
-const getAuth = () => {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: token } : {};
-};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (n) =>
   Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 });
 
@@ -154,8 +149,8 @@ const Dashboard = () => {
     setLoadingCharts(true);
     try {
       const [sumRes, chartRes] = await Promise.all([
-        axios.get(`${API}/reports/summary?filter=last_3_months`, { headers: getAuth() }),
-        axios.get(`${API}/reports/charts?filter=last_3_months`, { headers: getAuth() }),
+        api.get("/reports/summary?filter=last_3_months"),
+        api.get("/reports/charts?filter=last_3_months"),
       ]);
       if (sumRes.data?.success) setSummary(sumRes.data.data);
       if (chartRes.data?.success) setCharts(chartRes.data.data);

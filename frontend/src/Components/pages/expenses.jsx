@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
 
 import {
     Box,
@@ -102,6 +102,8 @@ const getFrequencyLabel = (freq) => {
 const Expenses = () => {
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
 
@@ -121,10 +123,7 @@ const Expenses = () => {
         setLoading(true);
         setError(null);
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get("https://ai-based-financial-adviser-project-v1.onrender.com/api/expenses", {
-                headers: { Authorization: token },
-            });
+            const response = await api.get("/expenses");
             if (response.data && response.data.success) {
                 setExpenses(response.data.data);
             }
@@ -163,18 +162,14 @@ const Expenses = () => {
             return;
         }
 
+        if (saving) return;
+        setSaving(true);
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.post(
-                "https://ai-based-financial-adviser-project-v1.onrender.com/api/expenses",
-                {
-                    ...formData,
-                    amount: Number(formData.amount),
-                },
-                {
-                    headers: { Authorization: token },
-                }
-            );
+            const response = await api.post("/expenses", {
+                ...formData,
+                amount: Number(formData.amount),
+            });
 
             if (response.data && response.data.success) {
                 // Prepend new expense
@@ -197,23 +192,27 @@ const Expenses = () => {
         } catch (err) {
             console.error("Error adding expense:", err);
             alert(err.response?.data?.message || "Failed to save expense.");
+        } finally {
+            setSaving(false);
         }
     };
 
     // DELETE EXPENSE FROM DB
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this expense?")) return;
+        if (deletingId) return;
+        setDeletingId(id);
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.delete(`https://ai-based-financial-adviser-project-v1.onrender.com/api/expenses/${id}`, {
-                headers: { Authorization: token },
-            });
+            const response = await api.delete(`/expenses/${id}`);
             if (response.data && response.data.success) {
                 setExpenses(expenses.filter((item) => item.id !== id));
             }
         } catch (err) {
             console.error("Error deleting expense:", err);
             alert(err.response?.data?.message || "Failed to delete expense.");
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -455,9 +454,14 @@ const Expenses = () => {
                                             <IconButton
                                                 color="error"
                                                 onClick={() => handleDelete(expense.id)}
+                                                disabled={deletingId === expense.id}
                                                 size="small"
                                             >
-                                                <DeleteIcon fontSize="small" />
+                                                {deletingId === expense.id ? (
+                                                    <CircularProgress size={18} color="inherit" />
+                                                ) : (
+                                                    <DeleteIcon fontSize="small" />
+                                                )}
                                             </IconButton>
                                         </TableCell>
                                     </TableRow>
@@ -612,6 +616,8 @@ const Expenses = () => {
                     <Button
                         variant="contained"
                         onClick={handleAddExpense}
+                        disabled={saving}
+                        startIcon={saving ? <CircularProgress size={18} color="inherit" /> : null}
                         sx={{
                             borderRadius: "8px",
                             backgroundColor: "#6C63FF",
@@ -623,7 +629,7 @@ const Expenses = () => {
                             },
                         }}
                     >
-                        Save Expense
+                        {saving ? "Saving..." : "Save Expense"}
                     </Button>
                 </DialogActions>
             </Dialog>

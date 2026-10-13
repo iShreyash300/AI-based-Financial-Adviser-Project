@@ -1,4 +1,4 @@
-﻿# AI-Based Financial Adviser Project — Brain
+# AI-Based Financial Adviser Project — Brain
 
 ## 1. Project Overview & Core Purpose
 

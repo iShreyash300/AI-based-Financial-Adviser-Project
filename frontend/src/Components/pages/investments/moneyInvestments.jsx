@@ -28,7 +28,7 @@ const InvestmentsDashboard = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 2 }, background: "#F8FAFC", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, md: 2 }, background: "transparent", minHeight: "100vh" }}>
       <Container maxWidth="xl" disableGutters>
         {/* Header Section */}
         <Stack
@@ -105,9 +105,9 @@ const InvestmentsDashboard = () => {
         </Grid>
 
         {/* Footer Note */}
-        {/* <Typography variant="caption" sx={{ color: "#9CA3AF", fontSize: "0.75rem", display: "block", textAlign: "left", mt: 2 }}>
-          Note: Market data is delayed by 15 minutes. Investments are subject to market risks. Past performance is not indicative of future results.
-        </Typography> */}
+        <Typography variant="caption" sx={{ color: "#9CA3AF", fontSize: "0.75rem", display: "block", textAlign: "left", mt: 2 }}>
+          Note: Indian stock market data is delayed by ~15 minutes. Investments are subject to market risks. Past performance is not indicative of future results.
+        </Typography>
 
         {/* Modal for + New Investment */}
         <NewInvestmentModal

@@ -1,19 +1,28 @@
 const { pool } = require("../config/db");
 
 const resolveDepartmentId = async (userId, departmentName) => {
+  const trimmed = departmentName.trim();
   const lookupQuery = `
     SELECT id
     FROM departments
-    WHERE user_id = $1 AND LOWER(department_name) = LOWER($2)
+    WHERE (user_id = $1 OR user_id IS NULL) AND LOWER(department_name) = LOWER($2)
+    ORDER BY (user_id = $1) DESC
+    LIMIT 1
   `;
 
-  const lookupResult = await pool.query(lookupQuery, [
-    userId,
-    departmentName.trim(),
-  ]);
+  const lookupResult = await pool.query(lookupQuery, [userId, trimmed]);
 
   if (lookupResult.rows.length > 0) {
     return lookupResult.rows[0].id;
+  }
+
+  const globalResult = await pool.query(
+    "SELECT id FROM departments WHERE LOWER(department_name) = LOWER($1) LIMIT 1",
+    [trimmed]
+  );
+
+  if (globalResult.rows.length > 0) {
+    return globalResult.rows[0].id;
   }
 
   const insertQuery = `
@@ -22,16 +31,13 @@ const resolveDepartmentId = async (userId, departmentName) => {
     RETURNING id
   `;
 
-  const insertResult = await pool.query(insertQuery, [
-    userId,
-    departmentName.trim(),
-  ]);
+  const insertResult = await pool.query(insertQuery, [userId, trimmed]);
   return insertResult.rows[0].id;
 };
 
 const buildBudgetResponse = (row) => ({
   id: row.id,
-  department_name: row.department_name,
+  department_name: row.department_name || "General Budget",
   budget_month: row.budget_month,
   budget_year: row.budget_year,
   amount: Number(row.amount),

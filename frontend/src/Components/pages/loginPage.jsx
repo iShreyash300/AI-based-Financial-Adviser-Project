@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
     Box,
     Button,
@@ -11,6 +11,7 @@ import {
     InputAdornment,
     IconButton,
     Alert,
+    CircularProgress,
 } from "@mui/material";
 
 
@@ -25,6 +26,7 @@ import loginimg from '../../assetes/login.png'
 const LoginPage = () => {
 
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState("");
@@ -74,11 +76,14 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (loading) return;
         if (!validateForm()) return;
 
+        setLoading(true);
+
         try {
-            const response = await axios.post(
-                "https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/login",
+            const response = await api.post(
+                "/auth/login",
                 {
                     email: formData.email,
                     password: formData.password,
@@ -101,14 +106,6 @@ const LoginPage = () => {
                 localStorage.removeItem("email");
             }
 
-            setSuccess("Login Successful!");
-
-            setTimeout(() => {
-                navigate("/dashboard");
-            }, 1000);
-
-
-
             // Save Login State
             localStorage.setItem("isLogin", true);
 
@@ -125,7 +122,7 @@ const LoginPage = () => {
 
             setTimeout(() => {
                 navigate("/dashboard");
-            }, 1500);
+            }, 1000);
 
         } catch (error) {
             setSuccess("");
@@ -135,6 +132,8 @@ const LoginPage = () => {
                     error.response?.data?.message ||
                     "Invalid Email or Password",
             });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -383,6 +382,7 @@ const LoginPage = () => {
                             type="submit"
                             variant="contained"
                             fullWidth
+                            disabled={loading}
                             sx={{
                                 py: 1.5,
                                 borderRadius: "12px",
@@ -393,7 +393,11 @@ const LoginPage = () => {
                                     "linear-gradient(90deg, #5B5FEF 0%, #7B61FF 100%)",
                             }}
                         >
-                            Sign In
+                            {loading ? (
+                                <CircularProgress size={22} sx={{ color: "#fff" }} />
+                            ) : (
+                                "Sign In"
+                            )}
                         </Button>
 
                         <Typography

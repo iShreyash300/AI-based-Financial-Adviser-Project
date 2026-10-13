@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
     Box,
     Button,
@@ -33,9 +33,7 @@ const ProfilePage = () => {
 
         const fetchProfile = async () => {
             try {
-                const response = await axios.get("https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/profile", {
-                    headers: { Authorization: token },
-                });
+                const response = await api.get("/auth/profile");
 
                 if (response.data?.success) {
                     setFormData({
@@ -66,6 +64,8 @@ const ProfilePage = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        if (saving) return;
+
         if (!formData.name || !formData.business_name || !formData.email) {
             setError("Please complete all fields before updating.");
             setMessage(null);
@@ -77,15 +77,12 @@ const ProfilePage = () => {
         setMessage(null);
 
         try {
-            const response = await axios.put(
-                "https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/profile",
+            const response = await api.put(
+                "/auth/profile",
                 {
                     name: formData.name,
                     business_name: formData.business_name,
                     email: formData.email,
-                },
-                {
-                    headers: { Authorization: token },
                 }
             );
 
@@ -171,6 +168,7 @@ const ProfilePage = () => {
                         variant="contained"
                         size="large"
                         disabled={saving}
+                        startIcon={saving ? <CircularProgress size={18} color="inherit" /> : null}
                         sx={{ width: "fit-content", mt: 1 }}
                     >
                         {saving ? "Saving..." : "Update Profile"}

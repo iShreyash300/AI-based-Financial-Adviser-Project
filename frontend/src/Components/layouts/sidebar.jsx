@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import {
@@ -27,14 +27,7 @@ const menuItems = [
     icon: <DashboardOutlinedIcon />,
     path: "/dashboard",
   },
-  {
-    name: "Investments",
-    icon: <TrendingUpIcon />,
-    path: "/investments",
-    subItems: [
-      { name: "Investment Allocation", path: "/investments/allocation", icon: <PieChartOutlinedIcon sx={{ fontSize: 14 }} /> },
-    ],
-  },
+
   {
     name: "Expenses",
     icon: <AnalyticsOutlinedIcon />,
@@ -54,6 +47,14 @@ const menuItems = [
     name: "Predictions",
     icon: <TipsAndUpdatesIcon />,
     path: "/predictions",
+  },
+  {
+    name: "Investments",
+    icon: <TrendingUpIcon />,
+    path: "/investments",
+    subItems: [
+      { name: "Investment Allocation", path: "/investments/allocation", icon: <PieChartOutlinedIcon sx={{ fontSize: 14 }} /> },
+    ],
   },
   {
     name: "Growth Plans",
@@ -79,10 +80,8 @@ const Sidebar = () => {
 
     if (!token) return;
 
-    axios
-      .get("https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/profile", {
-        headers: { Authorization: token },
-      })
+    api
+      .get("/auth/profile")
       .then((res) => setUser(res.data.user || null))
       .catch(() => setUser(null));
   }, []);

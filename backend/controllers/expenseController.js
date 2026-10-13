@@ -60,7 +60,39 @@ const createExpense = async (req, res) => {
       });
     }
 
-    // 1. Resolve Category ID (case-insensitive lookup)
+    // 1. Resolve Department ID (case-insensitive lookup per user or standard/global departments)
+    let departmentId;
+    const trimmedDept = department.trim();
+    const deptQuery = `
+      SELECT id FROM departments
+      WHERE (user_id = $1 OR user_id IS NULL) AND LOWER(department_name) = LOWER($2)
+      ORDER BY (user_id = $1) DESC
+      LIMIT 1
+    `;
+    const deptResult = await pool.query(deptQuery, [userId, trimmedDept]);
+
+    if (deptResult.rows.length > 0) {
+      departmentId = deptResult.rows[0].id;
+    } else {
+      const globalDeptResult = await pool.query(
+        "SELECT id FROM departments WHERE LOWER(department_name) = LOWER($1) LIMIT 1",
+        [trimmedDept]
+      );
+
+      if (globalDeptResult.rows.length > 0) {
+        departmentId = globalDeptResult.rows[0].id;
+      } else {
+        const insertDept = `
+          INSERT INTO departments (user_id, department_name)
+          VALUES ($1, $2)
+          RETURNING id
+        `;
+        const newDeptResult = await pool.query(insertDept, [userId, trimmedDept]);
+        departmentId = newDeptResult.rows[0].id;
+      }
+    }
+
+    // 2. Resolve Category ID (case-insensitive lookup)
     let categoryId;
     const catQuery = 'SELECT id FROM expense_categories WHERE LOWER(category_name) = LOWER($1)';
     const catResult = await pool.query(catQuery, [category.trim()]);
@@ -81,32 +113,14 @@ const createExpense = async (req, res) => {
         categoryType = "variable";
       }
 
-      // Insert new category
+      // Insert new category with associated department_id
       const insertCat = `
-        INSERT INTO expense_categories (category_name, category_type)
-        VALUES ($1, $2)
+        INSERT INTO expense_categories (category_name, category_type, department_id)
+        VALUES ($1, $2, $3)
         RETURNING id
       `;
-      const newCatResult = await pool.query(insertCat, [category.trim(), categoryType]);
+      const newCatResult = await pool.query(insertCat, [category.trim(), categoryType, departmentId]);
       categoryId = newCatResult.rows[0].id;
-    }
-
-    // 2. Resolve Department ID (case-insensitive lookup per user)
-    let departmentId;
-    const deptQuery = 'SELECT id FROM departments WHERE user_id = $1 AND LOWER(department_name) = LOWER($2)';
-    const deptResult = await pool.query(deptQuery, [userId, department.trim()]);
-
-    if (deptResult.rows.length > 0) {
-      departmentId = deptResult.rows[0].id;
-    } else {
-      // Insert new department
-      const insertDept = `
-        INSERT INTO departments (user_id, department_name)
-        VALUES ($1, $2)
-        RETURNING id
-      `;
-      const newDeptResult = await pool.query(insertDept, [userId, department.trim()]);
-      departmentId = newDeptResult.rows[0].id;
     }
 
     // 3. Insert Expense

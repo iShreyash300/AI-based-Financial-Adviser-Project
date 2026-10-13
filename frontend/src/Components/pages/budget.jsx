@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 
 import {
     Box,
@@ -26,7 +26,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-const API_BASE_URL = "https://ai-based-financial-adviser-project-v1.onrender.com/api/budgets";
+const BUDGETS_ENDPOINT = "/budgets";
 
 const MONTHS = [
     { value: 1, label: "January" },
@@ -53,7 +53,7 @@ const getMonthLabel = (monthValue) => {
 
 const normalizeBudget = (item) => ({
     id: item.id ?? Date.now(),
-    department_name: item.department_name ?? item.department ?? "",
+    department_name: item.department_name || item.department || "General Budget",
     budget_month: Number(item.budget_month) || new Date().getMonth() + 1,
     budget_year: Number(item.budget_year) || getCurrentYear(),
     amount: Number(item.amount) || 0,
@@ -69,6 +69,9 @@ const createInitialForm = () => ({
 const BudgetPage = () => {
     const [budgets, setBudgets] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [creating, setCreating] = useState(false);
+    const [updating, setUpdating] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [error, setError] = useState("");
     const [openCreate, setOpenCreate] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
@@ -80,13 +83,10 @@ const BudgetPage = () => {
             setLoading(true);
             setError("");
 
-            try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get(API_BASE_URL, {
-                    headers: { Authorization: token },
-                });
+        try {
+            const response = await api.get(BUDGETS_ENDPOINT);
 
-                if (response.data?.success) {
+            if (response.data?.success) {
                     setBudgets((response.data.data || []).map(normalizeBudget));
                 } else {
                     setBudgets([]);
@@ -166,19 +166,18 @@ const BudgetPage = () => {
             return;
         }
 
+        if (creating) return;
+        setCreating(true);
+
         const createBudget = async () => {
             try {
-                const token = localStorage.getItem("token");
-                const response = await axios.post(
-                    API_BASE_URL,
+                const response = await api.post(
+                    BUDGETS_ENDPOINT,
                     {
                         department_name: newBudget.department_name.trim(),
                         budget_month: Number(newBudget.budget_month),
                         budget_year: Number(newBudget.budget_year),
                         amount: Number(newBudget.amount),
-                    },
-                    {
-                        headers: { Authorization: token },
                     }
                 );
 
@@ -193,6 +192,8 @@ const BudgetPage = () => {
                     createError.response?.data?.message ||
                     "Failed to save budget to the server."
                 );
+            } finally {
+                setCreating(false);
             }
         };
 
@@ -200,11 +201,11 @@ const BudgetPage = () => {
     };
 
     const handleDelete = async (id) => {
+        if (deletingId) return;
+        setDeletingId(id);
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.delete(`${API_BASE_URL}/${id}`, {
-                headers: { Authorization: token },
-            });
+            const response = await api.delete(`${BUDGETS_ENDPOINT}/${id}`);
 
             if (response.data?.success) {
                 setBudgets((prev) => prev.filter((item) => item.id !== id));
@@ -214,6 +215,8 @@ const BudgetPage = () => {
                 deleteError.response?.data?.message ||
                 "Failed to delete budget from the server."
             );
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -227,18 +230,17 @@ const BudgetPage = () => {
             return;
         }
 
+        if (updating) return;
+        setUpdating(true);
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.put(
-                `${API_BASE_URL}/${selectedBudget.id}`,
+            const response = await api.put(
+                `${BUDGETS_ENDPOINT}/${selectedBudget.id}`,
                 {
                     department_name: selectedBudget.department_name.trim(),
                     budget_month: Number(selectedBudget.budget_month),
                     budget_year: Number(selectedBudget.budget_year),
                     amount: Number(selectedBudget.amount),
-                },
-                {
-                    headers: { Authorization: token },
                 }
             );
 
@@ -259,6 +261,8 @@ const BudgetPage = () => {
                 updateError.response?.data?.message ||
                 "Failed to update budget on the server."
             );
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -462,7 +466,7 @@ const BudgetPage = () => {
                                     <Box>
                                         <Typography variant="subtitle1" fontWeight={800}
                                             sx={{ fontSize: { md: "18px", xs: "22px" } }}>
-                                            {item.department_name}
+                                            {item.department_name || "General Budget"}
                                         </Typography>
                                         <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
                                             <Chip label={getMonthLabel(item.budget_month)} size="small" />
@@ -477,8 +481,16 @@ const BudgetPage = () => {
                                         <IconButton onClick={() => handleEdit(item)} aria-label="edit budget">
                                             <EditOutlinedIcon color="primary" />
                                         </IconButton>
-                                        <IconButton onClick={() => handleDelete(item.id)} aria-label="delete budget">
-                                            <DeleteOutlineOutlinedIcon color="error" />
+                                        <IconButton
+                                            onClick={() => handleDelete(item.id)}
+                                            disabled={deletingId === item.id}
+                                            aria-label="delete budget"
+                                        >
+                                            {deletingId === item.id ? (
+                                                <CircularProgress size={18} color="inherit" />
+                                            ) : (
+                                                <DeleteOutlineOutlinedIcon color="error" />
+                                            )}
                                         </IconButton>
                                     </Stack>
                                 </Stack>
@@ -531,8 +543,13 @@ const BudgetPage = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeCreateDialog}>Cancel</Button>
-                    <Button variant="contained" onClick={handleCreateBudget}>
-                        Create
+                    <Button
+                        variant="contained"
+                        onClick={handleCreateBudget}
+                        disabled={creating}
+                        startIcon={creating ? <CircularProgress size={18} color="inherit" /> : null}
+                    >
+                        {creating ? "Creating..." : "Create"}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -580,8 +597,13 @@ const BudgetPage = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeEditDialog}>Cancel</Button>
-                    <Button variant="contained" onClick={handleUpdateBudget}>
-                        Save
+                    <Button
+                        variant="contained"
+                        onClick={handleUpdateBudget}
+                        disabled={updating}
+                        startIcon={updating ? <CircularProgress size={18} color="inherit" /> : null}
+                    >
+                        {updating ? "Saving..." : "Save"}
                     </Button>
                 </DialogActions>
             </Dialog>

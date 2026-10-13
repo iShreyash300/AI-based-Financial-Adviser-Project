@@ -3,7 +3,7 @@
 // ==============================
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 
 import {
   Alert,
@@ -47,9 +47,8 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const API_BASE = "https://ai-based-financial-adviser-project-v1.onrender.com/api";
-const GOALS_URL = `${API_BASE}/goals`;
-const REC_URL = `${API_BASE}/growth-plan/recommendations`;
+const GOALS_ENDPOINT = "/goals";
+const REC_ENDPOINT = "/growth-plan/recommendations";
 
 const CATEGORIES = [
   "General", "Savings", "Investment", "Debt Reduction",
@@ -71,11 +70,6 @@ const createEmptyForm = () => ({
 });
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
-const getAuthHeader = () => {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: token } : {};
-};
-
 const statusColor = (status) => {
   if (status === "Completed") return { bg: "#e6f4ea", text: "#1e7e34", border: "#a3d9a5" };
   if (status === "On Track") return { bg: "#e3f0ff", text: "#1565c0", border: "#90caf9" };
@@ -569,7 +563,7 @@ const GoalsPage = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.get(GOALS_URL, { headers: getAuthHeader() });
+      const res = await api.get(GOALS_ENDPOINT);
       setGoals((res.data.data || []).map(normalizeGoalData));
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to fetch goals.";
@@ -582,7 +576,7 @@ const GoalsPage = () => {
   const fetchRecommendations = useCallback(async () => {
     setRecLoading(true);
     try {
-      const res = await axios.get(REC_URL, { headers: getAuthHeader() });
+      const res = await api.get(REC_ENDPOINT);
       setRecs(res.data.data?.recommendations || []);
       setRecSummary(res.data.data?.summary || null);
     } catch (_) {
@@ -618,9 +612,10 @@ const GoalsPage = () => {
 
   // ── CRUD handlers ─────────────────────────────────────────────────────────────
   const handleCreate = async (form) => {
+    if (formLoading) return;
     setFormLoading(true);
     try {
-      await axios.post(GOALS_URL, normalizeGoalPayload(form), { headers: getAuthHeader() });
+      await api.post(GOALS_ENDPOINT, normalizeGoalPayload(form));
       setOpenCreate(false);
       setSnack({ open: true, msg: "Goal created successfully!", severity: "success" });
       await refreshAll();
@@ -632,10 +627,10 @@ const GoalsPage = () => {
   };
 
   const handleUpdate = async (form) => {
-    if (!selectedGoal) return;
+    if (!selectedGoal || formLoading) return;
     setFormLoading(true);
     try {
-      await axios.put(`${GOALS_URL}/${selectedGoal.id}`, normalizeGoalPayload(form), { headers: getAuthHeader() });
+      await api.put(`${GOALS_ENDPOINT}/${selectedGoal.id}`, normalizeGoalPayload(form));
       setOpenEdit(false);
       setSnack({ open: true, msg: "Goal updated successfully!", severity: "success" });
       await refreshAll();
@@ -647,10 +642,10 @@ const GoalsPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!selectedGoal) return;
+    if (!selectedGoal || deleteLoading) return;
     setDelLoading(true);
     try {
-      await axios.delete(`${GOALS_URL}/${selectedGoal.id}`, { headers: getAuthHeader() });
+      await api.delete(`${GOALS_ENDPOINT}/${selectedGoal.id}`);
       setOpenDelete(false);
       setSnack({ open: true, msg: "Goal deleted.", severity: "info" });
       await refreshAll();

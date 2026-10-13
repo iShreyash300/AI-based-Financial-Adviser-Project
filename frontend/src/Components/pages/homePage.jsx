@@ -1,8 +1,8 @@
 
 
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import Linerchart from "../Charts/RevenueChart"
+import backImage from "../../assetes/back_first_fold.svg"
 
 
 import {
@@ -44,7 +44,12 @@ const HomePage = () => {
     ];
 
     return (
-        <Box sx={{ bgcolor: "#f5f7ff", p: 5 }}>
+        <Box sx={{
+            bgcolor: "#f5f7ff", paddingX: 5, backgroundImage: `url(${backImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+        }}>
             {/* <Box sx={{ bgcolor: "#060606" }}> */}
             {/* HERO SECTION */}
 

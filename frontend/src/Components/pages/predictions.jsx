@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
   Box,
   Card,
@@ -48,7 +48,7 @@ ChartJS.register(
   Filler
 );
 
-const API_BASE_URL = "https://ai-based-financial-adviser-project-v1.onrender.com/api/predictions";
+const PREDICTIONS_ENDPOINT = "/predictions";
 
 const PredictionsPage = () => {
   const [tabValue, setTabValue] = useState(0); // 0: Expense, 1: Revenue, 2: Cash Flow
@@ -65,10 +65,7 @@ const PredictionsPage = () => {
     setLoading(true);
     setError("");
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_BASE_URL}/${type}`, {
-        headers: { Authorization: token },
-      });
+      const response = await api.get(`${PREDICTIONS_ENDPOINT}/${type}`);
 
       if (response.data?.success) {
         setPredictionData(response.data.data);

@@ -1,32 +1,3 @@
-// import React from "react";
-// import Header from "./navbar";
-// import Sidebar from "./sidebar";
-// import { Box } from "@mui/material";
-
-// const Layout = ({ children }) => {
-
-//     const isLogin =
-//         localStorage.getItem("isLogin");
-//     return (
-//         <>
-//             <Box sx={{
-//                 width: "100%",
-
-//             }}>
-//                 <Header isLogin={isLogin} />
-//                 {isLogin && <Sidebar />}
-//                 <Box sx={{ height: "100vh", }}  >{children}</Box>
-//             </Box>
-
-//         </>
-//     );
-// };
-
-// export default Layout;
-
-
-
-import React from "react";
 
 import { Box } from "@mui/material";
 
@@ -96,6 +67,7 @@ const Layout = ({ children }) => {
                             minHeight: {
                                 xs: "auto",
                                 md: "calc(100vh - 75px)",
+                                backgroundColor: "transparent"
                             },
                             py: 8,
                         }}

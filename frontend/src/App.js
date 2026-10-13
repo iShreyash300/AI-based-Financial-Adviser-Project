@@ -9,6 +9,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 
 import Layout from "./Components/layouts/index";
+import { LoadingProvider } from "./context/LoadingContext";
+import GlobalLoadingIndicator from "./Components/ui/GlobalLoadingIndicator";
 
 import ProtectedRoute from "../src/routers/ProtectedRoute";
 // import Dashboard from "./Components/pages/deshboardPage";
@@ -63,12 +65,14 @@ const Loader = () => {
 
 function App() {
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "#f5f7fb",
-      }}
-    >
+    <LoadingProvider>
+      <GlobalLoadingIndicator />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          background: "#f5f7fb",
+        }}
+      >
       <BrowserRouter>
         <Suspense fallback={<Loader />}>
           <Routes>
@@ -243,6 +247,7 @@ function App() {
         </Suspense>
       </BrowserRouter>
     </Box>
+    </LoadingProvider>
   );
 }
 

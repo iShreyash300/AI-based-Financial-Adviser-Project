@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 
 import {
     Alert,
@@ -12,6 +12,7 @@ import {
     Stack,
     TextField,
     Typography,
+    CircularProgress,
 } from "@mui/material";
 
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
@@ -25,6 +26,7 @@ const SignupPage = () => {
     // ================= STATES =================
 
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] =
         useState(false);
 
@@ -121,14 +123,17 @@ const SignupPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (loading) return;
         if (!validateForm()) {
             setSuccess("");
             return;
         }
 
+        setLoading(true);
+
         try {
-            const response = await axios.post(
-                "https://ai-based-financial-adviser-project-v1.onrender.com/api/auth/signup",
+            const response = await api.post(
+                "/auth/signup",
                 {
                     business_name: formData.business_name,
                     owner_name: formData.owner_name,
@@ -163,6 +168,8 @@ const SignupPage = () => {
                     error.response?.data?.message ||
                     "Something went wrong",
             });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -553,6 +560,7 @@ const SignupPage = () => {
                                 type="submit"
                                 variant="contained"
                                 fullWidth
+                                disabled={loading}
                                 sx={{
                                     width: "40%",
                                     height: "40px",
@@ -569,7 +577,11 @@ const SignupPage = () => {
                                     },
                                 }}
                             >
-                                Create Account
+                                {loading ? (
+                                    <CircularProgress size={20} sx={{ color: "#fff" }} />
+                                ) : (
+                                    "Create Account"
+                                )}
                             </Button>
 
                         </Stack>

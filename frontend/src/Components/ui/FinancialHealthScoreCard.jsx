@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
   Box,
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   LinearProgress,
   Stack,
   Tooltip,
   Typography,
+  Button,
 } from "@mui/material";
 
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -17,6 +17,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
+import FinancialHealthScoreCardSkeleton from "./skeletons/FinancialHealthScoreCardSkeleton";
 
 // ─── Colour palette keyed on status ──────────────────────────────────────────
 const STATUS_PALETTE = {
@@ -166,9 +167,7 @@ const FinancialHealthScoreCard = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await axios.get("https://ai-based-financial-adviser-project-v1.onrender.com/api/financial-health", {
-        headers: { Authorization: token },
-      });
+      const res = await api.get("/financial-health");
       if (res.data?.success) {
         setData(res.data.data);
         setLastUpdated(new Date());
@@ -192,18 +191,7 @@ const FinancialHealthScoreCard = () => {
 
   // ── Loading skeleton ────────────────────────────────────────────────────────
   if (loading && !data) {
-    return (
-      <Card sx={cardSx}>
-        <CardContent>
-          <Stack alignItems="center" justifyContent="center" minHeight={360} gap={2}>
-            <CircularProgress size={40} sx={{ color: "#6C63FF" }} />
-            <Typography variant="body2" color="text.secondary">
-              Calculating your financial health…
-            </Typography>
-          </Stack>
-        </CardContent>
-      </Card>
-    );
+    return <FinancialHealthScoreCardSkeleton />;
   }
 
   // ── Error state ─────────────────────────────────────────────────────────────
@@ -211,11 +199,21 @@ const FinancialHealthScoreCard = () => {
     return (
       <Card sx={cardSx}>
         <CardContent>
-          <Stack alignItems="center" justifyContent="center" minHeight={200} gap={1.5}>
-            <MonitorHeartIcon sx={{ fontSize: 40, color: "#ef4444" }} />
-            <Typography variant="body2" color="error" textAlign="center" fontWeight={600}>
+          <Stack alignItems="center" justifyContent="center" minHeight={260} gap={1.5} py={3}>
+            <MonitorHeartIcon sx={{ fontSize: 44, color: "#ef4444" }} />
+            <Typography variant="body1" color="error" textAlign="center" fontWeight={600}>
               {error}
             </Typography>
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              startIcon={<RefreshIcon />}
+              onClick={fetchHealth}
+              sx={{ borderRadius: "8px", textTransform: "none", mt: 1 }}
+            >
+              Retry Financial Health
+            </Button>
           </Stack>
         </CardContent>
       </Card>

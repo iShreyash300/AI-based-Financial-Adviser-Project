@@ -12,6 +12,7 @@ const financialHealthRoutes = require("./routes/financialHealthRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const goalsRoutes = require("./routes/goalsRoutes");
 const growthPlanRoutes = require("./routes/growthPlanRoutes");
+const stockRoutes = require("./routes/stockRoutes");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/financial-health", financialHealthRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/goals", goalsRoutes);
 app.use("/api/growth-plan", growthPlanRoutes);
+app.use("/api/stocks", stockRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running 🚀");

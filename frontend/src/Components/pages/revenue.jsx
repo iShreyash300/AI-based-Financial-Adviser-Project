@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 
 import {
     Alert,
@@ -26,7 +26,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-const API_BASE_URL = "https://ai-based-financial-adviser-project-v1.onrender.com/api/revenues";
+const REVENUE_ENDPOINT = "/revenues";
 
 const createInitialForm = () => ({
     source: "",
@@ -48,6 +48,9 @@ const normalizeRevenue = (item) => ({
 const RevenuePage = () => {
     const [revenues, setRevenues] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [creating, setCreating] = useState(false);
+    const [updating, setUpdating] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [error, setError] = useState("");
     const [openCreate, setOpenCreate] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
@@ -59,13 +62,10 @@ const RevenuePage = () => {
             setLoading(true);
             setError("");
 
-            try {
-                const token = localStorage.getItem("token");
-                const response = await axios.get(API_BASE_URL, {
-                    headers: { Authorization: token },
-                });
+        try {
+            const response = await api.get(REVENUE_ENDPOINT);
 
-                if (response.data?.success) {
+            if (response.data?.success) {
                     setRevenues((response.data.data || []).map(normalizeRevenue));
                 } else {
                     setRevenues([]);
@@ -158,19 +158,18 @@ const RevenuePage = () => {
             return;
         }
 
+        if (creating) return;
+        setCreating(true);
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.post(
-                API_BASE_URL,
+            const response = await api.post(
+                REVENUE_ENDPOINT,
                 {
                     source: newRevenue.source.trim(),
                     department_name: newRevenue.department_name.trim(),
                     description: newRevenue.description.trim(),
                     revenue_date: newRevenue.revenue_date,
                     amount: Number(newRevenue.amount),
-                },
-                {
-                    headers: { Authorization: token },
                 }
             );
 
@@ -184,15 +183,17 @@ const RevenuePage = () => {
             setError(
                 createError.response?.data?.message || "Failed to save revenue to the server."
             );
+        } finally {
+            setCreating(false);
         }
     };
 
     const handleDelete = async (id) => {
+        if (deletingId) return;
+        setDeletingId(id);
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.delete(`${API_BASE_URL}/${id}`, {
-                headers: { Authorization: token },
-            });
+            const response = await api.delete(`${REVENUE_ENDPOINT}/${id}`);
 
             if (response.data?.success) {
                 setRevenues((prev) => prev.filter((item) => item.id !== id));
@@ -202,6 +203,8 @@ const RevenuePage = () => {
                 deleteError.response?.data?.message ||
                 "Failed to delete revenue from the server."
             );
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -215,19 +218,18 @@ const RevenuePage = () => {
             return;
         }
 
+        if (updating) return;
+        setUpdating(true);
+
         try {
-            const token = localStorage.getItem("token");
-            const response = await axios.put(
-                `${API_BASE_URL}/${selectedRevenue.id}`,
+            const response = await api.put(
+                `${REVENUE_ENDPOINT}/${selectedRevenue.id}`,
                 {
                     source: selectedRevenue.source.trim(),
                     department_name: selectedRevenue.department_name.trim(),
                     description: selectedRevenue.description.trim(),
                     revenue_date: selectedRevenue.revenue_date,
                     amount: Number(selectedRevenue.amount),
-                },
-                {
-                    headers: { Authorization: token },
                 }
             );
 
@@ -246,6 +248,8 @@ const RevenuePage = () => {
                 updateError.response?.data?.message ||
                 "Failed to update revenue on the server."
             );
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -456,8 +460,16 @@ const RevenuePage = () => {
                                         <IconButton onClick={() => handleEdit(item)} aria-label="edit revenue">
                                             <EditOutlinedIcon color="primary" />
                                         </IconButton>
-                                        <IconButton onClick={() => handleDelete(item.id)} aria-label="delete revenue">
-                                            <DeleteOutlineOutlinedIcon color="error" />
+                                        <IconButton
+                                            onClick={() => handleDelete(item.id)}
+                                            disabled={deletingId === item.id}
+                                            aria-label="delete revenue"
+                                        >
+                                            {deletingId === item.id ? (
+                                                <CircularProgress size={18} color="inherit" />
+                                            ) : (
+                                                <DeleteOutlineOutlinedIcon color="error" />
+                                            )}
                                         </IconButton>
                                     </Stack>
                                 </Stack>
@@ -513,8 +525,13 @@ const RevenuePage = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeCreateDialog}>Cancel</Button>
-                    <Button variant="contained" onClick={handleCreateRevenue}>
-                        Create
+                    <Button
+                        variant="contained"
+                        onClick={handleCreateRevenue}
+                        disabled={creating}
+                        startIcon={creating ? <CircularProgress size={18} color="inherit" /> : null}
+                    >
+                        {creating ? "Creating..." : "Create"}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -565,8 +582,13 @@ const RevenuePage = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenEdit(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handleUpdateRevenue}>
-                        Save
+                    <Button
+                        variant="contained"
+                        onClick={handleUpdateRevenue}
+                        disabled={updating}
+                        startIcon={updating ? <CircularProgress size={18} color="inherit" /> : null}
+                    >
+                        {updating ? "Saving..." : "Save"}
                     </Button>
                 </DialogActions>
             </Dialog>
