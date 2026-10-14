@@ -12,9 +12,13 @@ function handleServiceError(res, error, defaultMessage = "Stock market operation
   console.error("Stock Controller Error:", error);
 
   if (error instanceof stockService.StockServiceError) {
+    let userMessage = error.message;
+    if (error.status === 429 || /429|crumb/i.test(error.message)) {
+      userMessage = "The stock market data provider is temporarily rate-limiting requests (HTTP 429). Please wait a moment and try again.";
+    }
     return res.status(error.status).json({
       success: false,
-      message: error.message,
+      message: userMessage,
       ...(error.details ? { details: error.details } : {}),
     });
   }

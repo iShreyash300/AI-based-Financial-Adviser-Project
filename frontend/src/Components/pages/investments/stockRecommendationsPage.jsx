@@ -8,7 +8,6 @@ import {
   Container,
   Paper,
   Chip,
-  Divider,
   TextField,
   InputAdornment,
   Dialog,
@@ -18,18 +17,21 @@ import {
   IconButton,
   CircularProgress,
   Alert,
+  Snackbar,
+  Pagination,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
 import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
+import StockRecommendationCard from "../../investments/StockRecommendationCard";
+import StockBuyModal from "../../investments/StockBuyModal";
 
 const formatCurrency = (val) => {
   if (val === null || val === undefined || isNaN(val)) return "N/A";
@@ -42,6 +44,14 @@ const formatCurrency = (val) => {
 
 const INITIAL_CARD_COUNT = 6;
 
+const CATEGORY_TABS = [
+  { id: "ALL", label: "All Equities" },
+  { id: "TECH", label: "Technology" },
+  { id: "BANKING", label: "Banking & Finance" },
+  { id: "ENERGY", label: "Energy & Auto" },
+  { id: "WATCHLIST", label: "My Watchlist" },
+];
+
 const StockRecommendationsPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,15 +59,48 @@ const StockRecommendationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeCategory, setActiveCategory] = useState("ALL");
   const [marketInfo, setMarketInfo] = useState({
     status: "CLOSED",
     message: "Market Closed",
     delayNotice: "Data is delayed by ~15 minutes or reflects the last closing session.",
   });
+
+  // Modal states
   const [selectedStock, setSelectedStock] = useState(null);
+  const [buyStock, setBuyStock] = useState(null);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  // Live search state
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const searchTimeoutRef = useRef(null);
+
+  // User Watchlist stored in localStorage
+  const [watchlist, setWatchlist] = useState(() => {
+    try {
+      const saved = localStorage.getItem("user_stock_watchlist");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleToggleWatchlist = (stock) => {
+    const symbol = typeof stock === "string" ? stock : stock.symbol;
+    setWatchlist((prev) => {
+      const updated = prev.includes(symbol)
+        ? prev.filter((s) => s !== symbol)
+        : [...prev, symbol];
+      try {
+        localStorage.setItem("user_stock_watchlist", JSON.stringify(updated));
+      } catch (err) {
+        console.warn("Unable to save watchlist to localStorage", err);
+      }
+      return updated;
+    });
+  };
 
   const fetchStocks = useCallback(async () => {
     setLoading(true);
@@ -77,10 +120,15 @@ const StockRecommendationsPage = () => {
       }
     } catch (err) {
       console.error("Unable to fetch live stock data:", err);
-      setError(
-        err.response?.data?.message ||
-          "Unable to connect to live stock market feed. Please check your connection and try refreshing."
-      );
+      const rawMsg = err.response?.data?.message || "";
+      let friendlyMsg =
+        rawMsg ||
+        "Unable to connect to live stock market feed. Please check your connection and try refreshing.";
+      if (/429|crumb|rate limit/i.test(rawMsg)) {
+        friendlyMsg =
+          "The stock market data provider is temporarily rate-limiting requests (HTTP 429). Please wait a few seconds and click Retry.";
+      }
+      setError(friendlyMsg);
       setStocks([]);
     } finally {
       setLoading(false);
@@ -109,7 +157,6 @@ const StockRecommendationsPage = () => {
         setSearching(true);
         const res = await api.get(`/stocks/search?q=${encodeURIComponent(query)}`);
         if (res.data?.success && Array.isArray(res.data.data)) {
-          // If we got matching symbols, fetch batch quotes for top 12 search results
           const found = res.data.data.slice(0, 12);
           if (found.length > 0) {
             const symbols = found.map((f) => f.symbol).join(",");
@@ -151,7 +198,8 @@ const StockRecommendationsPage = () => {
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-    setIsExpanded(false); // Reset expansion state when searching
+    setIsExpanded(false);
+    setCurrentPage(1);
   };
 
   // Compile raw list: either search results or loaded recommendations
@@ -161,7 +209,6 @@ const StockRecommendationsPage = () => {
       return searchResults;
     }
     if (query.length >= 2 && searchResults.length === 0 && !searching) {
-      // User typed something but no search API results, try filtering loaded stocks
       return stocks.filter(
         (s) =>
           s.name?.toLowerCase().includes(query) ||
@@ -182,11 +229,39 @@ const StockRecommendationsPage = () => {
     }
   }
 
-  // Display only first 6 if not expanded; show all if expanded
-  const hasMoreStocks = uniqueStocks.length > INITIAL_CARD_COUNT;
-  const visibleStocks = isExpanded ? uniqueStocks : uniqueStocks.slice(0, INITIAL_CARD_COUNT);
+  // Category Filtering
+  const filteredStocks = uniqueStocks.filter((stock) => {
+    if (activeCategory === "ALL") return true;
+    if (activeCategory === "WATCHLIST") return watchlist.includes(stock.symbol);
+    const sec = (stock.sector || "").toLowerCase();
+    if (activeCategory === "TECH") {
+      return sec.includes("tech") || sec.includes("software") || sec.includes("it");
+    }
+    if (activeCategory === "BANKING") {
+      return sec.includes("bank") || sec.includes("finance");
+    }
+    if (activeCategory === "ENERGY") {
+      return sec.includes("energy") || sec.includes("oil") || sec.includes("auto");
+    }
+    return true;
+  });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredStocks.length / INITIAL_CARD_COUNT) || 1;
+  const hasMoreStocks = filteredStocks.length > INITIAL_CARD_COUNT;
+  const visibleStocks = isExpanded
+    ? filteredStocks
+    : filteredStocks.slice((currentPage - 1) * INITIAL_CARD_COUNT, currentPage * INITIAL_CARD_COUNT);
 
   const isMarketOpen = marketInfo.status === "OPEN";
+
+  const handleOrderSuccess = (order) => {
+    setSnackbarMessage(
+      `Simulated buy order placed for ${order.quantity} shares of ${order.symbol} (${formatCurrency(
+        order.totalAmount
+      )})!`
+    );
+  };
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, background: "#f5f7fb", minHeight: "100vh" }}>
@@ -259,7 +334,9 @@ const StockRecommendationsPage = () => {
             p: 2,
             mb: 3,
             borderRadius: "14px",
-            background: isMarketOpen ? "linear-gradient(90deg, #F0FDF4 0%, #DCFCE7 100%)" : "linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)",
+            background: isMarketOpen
+              ? "linear-gradient(90deg, #F0FDF4 0%, #DCFCE7 100%)"
+              : "linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)",
             border: `1px solid ${isMarketOpen ? "#BBF7D0" : "#FDE68A"}`,
             display: "flex",
             alignItems: "center",
@@ -288,6 +365,59 @@ const StockRecommendationsPage = () => {
             Exchange Hours: Mon–Fri, 9:15 AM – 3:30 PM IST (Prices delayed by ~15m)
           </Typography>
         </Paper>
+
+        {/* Category Tabs / Gallery Filter Bar */}
+        {!loading && !error && uniqueStocks.length > 0 && (
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{
+              mb: 3,
+              overflowX: "auto",
+              pb: 0.5,
+              "&::-webkit-scrollbar": { height: 4 },
+              "&::-webkit-scrollbar-thumb": { background: "#CBD5E1", borderRadius: 2 },
+            }}
+          >
+            {CATEGORY_TABS.map((tab) => {
+              const isActive = activeCategory === tab.id;
+              const isWatchlistTab = tab.id === "WATCHLIST";
+              const count = isWatchlistTab ? watchlist.length : null;
+
+              return (
+                <Chip
+                  key={tab.id}
+                  label={count !== null ? `${tab.label} (${count})` : tab.label}
+                  icon={isWatchlistTab ? <BookmarkIcon sx={{ fontSize: 16 }} /> : undefined}
+                  onClick={() => {
+                    setActiveCategory(tab.id);
+                    setIsExpanded(false);
+                    setCurrentPage(1);
+                  }}
+                  variant={isActive ? "filled" : "outlined"}
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.82rem",
+                    px: 0.5,
+                    py: 1.8,
+                    cursor: "pointer",
+                    borderRadius: "10px",
+                    background: isActive ? "linear-gradient(135deg, #5B5FEF 0%, #7B61FF 100%)" : "#FFFFFF",
+                    color: isActive ? "#FFFFFF" : "#475569",
+                    borderColor: isActive ? "transparent" : "#E2E8F0",
+                    boxShadow: isActive ? "0 2px 8px rgba(123, 97, 255, 0.25)" : "none",
+                    "&:hover": {
+                      background: isActive
+                        ? "linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%)"
+                        : "#F8FAFC",
+                    },
+                  }}
+                />
+              );
+            })}
+          </Stack>
+        )}
 
         {/* Error Alert State */}
         {error && (
@@ -329,11 +459,21 @@ const StockRecommendationsPage = () => {
               No stocks found
             </Typography>
             <Typography variant="body2" sx={{ color: "#64748b", maxWidth: 450, mx: "auto" }}>
-              {searchTerm.trim()
-                ? `We couldn't find any Indian equities matching "${searchTerm}". Try searching by ticker symbol (e.g. RELIANCE, TCS, INFY) or company name.`
-                : "No stock market data is currently available. Please click Refresh to reload."}
+              {activeCategory === "WATCHLIST"
+                ? "You haven't bookmarked any stocks yet. Click the bookmark icon on any stock card to build your personal watchlist."
+                : searchTerm.trim()
+                  ? `We couldn't find any Indian equities matching "${searchTerm}". Try searching by ticker symbol (e.g. RELIANCE, TCS, INFY) or company name.`
+                  : "No stock market data is currently available. Please click Refresh to reload."}
             </Typography>
-            {searchTerm.trim() && (
+            {activeCategory === "WATCHLIST" ? (
+              <Button
+                variant="text"
+                onClick={() => setActiveCategory("ALL")}
+                sx={{ mt: 2, color: "#7B61FF", fontWeight: 700, textTransform: "none" }}
+              >
+                Browse All Equities
+              </Button>
+            ) : searchTerm.trim() ? (
               <Button
                 variant="text"
                 onClick={() => setSearchTerm("")}
@@ -341,162 +481,81 @@ const StockRecommendationsPage = () => {
               >
                 Clear Search
               </Button>
-            )}
+            ) : null}
           </Paper>
         )}
 
-        {/* Stock List Grid */}
+        {/* Stock Gallery Grid */}
         {!loading && visibleStocks.length > 0 && (
           <>
-            <Grid container spacing={3} alignItems="stretch" sx={{ justifyContent: "space-around" }}>
-              {visibleStocks.map((stock, idx) => {
-                const isPos = stock.isPositive !== false;
-                const changeColor = isPos ? "#00C853" : "#EF4444";
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                },
+                gap: 3,
+                width: "100%",
+                alignItems: "stretch",
+              }}
+            >
+              {visibleStocks.map((stock, idx) => (
+                <Box
+                  key={stock.symbol || idx}
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                  }}
+                >
+                  <StockRecommendationCard
+                    stock={stock}
+                    onViewDetails={(s) => setSelectedStock(s)}
+                    onBuyStock={(s) => setBuyStock(s)}
+                    isWatchlisted={watchlist.includes(stock.symbol)}
+                    onToggleWatchlist={handleToggleWatchlist}
+                    customFormatCurrency={formatCurrency}
+                  />
+                </Box>
+              ))}
+            </Box>
 
-                return (
-                  <Grid item xs={12} md={6} lg={4} key={stock.symbol || idx} sx={{ display: "flex" }}>
-                    <Paper
-                      sx={{
-                        p: 3,
-                        borderRadius: "18px",
-                        border: "1px solid #eef2f6",
-                        background: "#fff",
-                        boxShadow: "0px 4px 20px rgba(0,0,0,0.03)",
-                        transition: "transform 0.2s, boxShadow 0.2s",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        width: "100%",
-                        minHeight: "270px",
-                        "&:hover": {
-                          transform: "translateY(-3px)",
-                          boxShadow: "0px 8px 25px rgba(123, 97, 255, 0.1)",
-                        },
-                      }}
-                    >
-                      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                        <Stack
-                          sx={{
-                            mb: 1.5,
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
-                            flexDirection: "row",
-                            minHeight: "44px",
-                          }}
-                        >
-                          <Box sx={{ pr: 1, overflow: "hidden" }}>
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 800,
-                                color: "#1e293b",
-                                fontSize: "1rem",
-                                lineHeight: 1.2,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {stock.name}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: "#64748b", fontWeight: 600, display: "block", mt: 0.3 }}>
-                              {stock.symbol} • {stock.sector || "General"}
-                            </Typography>
-                          </Box>
-                          <Chip
-                            label={stock.risk || "Moderate"}
-                            size="small"
-                            sx={{
-                              background: "rgba(123, 97, 255, 0.1)",
-                              color: "#7B61FF",
-                              fontWeight: 700,
-                              whiteSpace: "nowrap",
-                              flexShrink: 0,
-                            }}
-                          />
-                        </Stack>
+            {/* Pagination & Expansion Controls */}
+            <Stack
+              sx={{
+                mt: 4,
+                mb: 2,
+                flexDirection: { xs: "column", sm: "row" },
+                justifyContent: totalPages > 1 && !isExpanded ? "space-between" : "center",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              {totalPages > 1 && !isExpanded && (
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(e, value) => {
+                    setCurrentPage(value);
+                    window.scrollTo({ top: 250, behavior: "smooth" });
+                  }}
+                  color="primary"
+                  shape="rounded"
+                  size="medium"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      fontWeight: 700,
+                      borderRadius: "10px",
+                    },
+                    "& .Mui-selected": {
+                      background: "linear-gradient(135deg, #5B5FEF 0%, #7B61FF 100%) !important",
+                      color: "#fff",
+                    },
+                  }}
+                />
+              )}
 
-                        <Divider sx={{ my: 1.5 }} />
-
-                        <Grid container spacing={2} sx={{ mb: 2, flex: 1, alignItems: "center", justifyContent: "space-between" }}>
-                          <Grid item xs={6}>
-                            <Typography variant="caption" sx={{ color: "#94a3b8", display: "block" }}>
-                              Current Price
-                            </Typography>
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#1e293b", fontSize: "1.1rem" }}>
-                              {formatCurrency(stock.price)}
-                            </Typography>
-                            <Stack direction="row" spacing={0.3} alignItems="center">
-                              {isPos ? (
-                                <ArrowUpwardIcon sx={{ fontSize: 13, color: changeColor }} />
-                              ) : (
-                                <ArrowDownwardIcon sx={{ fontSize: 13, color: changeColor }} />
-                              )}
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: changeColor }}>
-                                {stock.change} ({stock.percentChange})
-                              </Typography>
-                            </Stack>
-                          </Grid>
-                          <Grid item xs={6} sx={{ textAlign: "right" }}>
-                            <Typography variant="caption" sx={{ color: "#94a3b8", display: "block" }}>
-                              1 Year Return
-                            </Typography>
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: "#00C853", fontSize: "1.1rem" }}>
-                              {stock.yearReturn || "N/A"}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: "#64748b" }}>
-                              P/E: {stock.peRatio || "N/A"}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </Box>
-
-                      <Stack sx={{ flexDirection: "row", gap: 1.5, width: "100%", mt: "auto", pt: 1 }}>
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          onClick={() => setSelectedStock(stock)}
-                          sx={{
-                            borderRadius: "10px",
-                            borderColor: "#7B61FF",
-                            color: "#7B61FF",
-                            fontWeight: 700,
-                            textTransform: "none",
-                            whiteSpace: "nowrap",
-                            px: 1.5,
-                            fontSize: "0.85rem",
-                            height: "40px",
-                          }}
-                        >
-                          View Details
-                        </Button>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          onClick={() => setSelectedStock(stock)}
-                          sx={{
-                            background: "linear-gradient(135deg, #5B5FEF 0%, #7B61FF 100%)",
-                            borderRadius: "10px",
-                            fontWeight: 700,
-                            textTransform: "none",
-                            whiteSpace: "nowrap",
-                            px: 1.5,
-                            fontSize: "0.85rem",
-                            height: "40px",
-                          }}
-                        >
-                          Buy Stock
-                        </Button>
-                      </Stack>
-                    </Paper>
-                  </Grid>
-                );
-              })}
-            </Grid>
-
-            {/* See More / Show Less Button */}
-            {hasMoreStocks && (
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 2 }}>
+              {hasMoreStocks && (
                 <Button
                   variant="outlined"
                   onClick={() => setIsExpanded((prev) => !prev)}
@@ -520,10 +579,10 @@ const StockRecommendationsPage = () => {
                 >
                   {isExpanded
                     ? "Show Less"
-                    : `See More (${uniqueStocks.length - INITIAL_CARD_COUNT} More Stocks)`}
+                    : `See More (${filteredStocks.length - INITIAL_CARD_COUNT} More Stocks)`}
                 </Button>
-              </Box>
-            )}
+              )}
+            </Stack>
           </>
         )}
 
@@ -602,13 +661,37 @@ const StockRecommendationsPage = () => {
             <Button onClick={() => setSelectedStock(null)}>Close</Button>
             <Button
               variant="contained"
-              onClick={() => setSelectedStock(null)}
+              onClick={() => {
+                const target = selectedStock;
+                setSelectedStock(null);
+                setBuyStock(target);
+              }}
               sx={{ background: "linear-gradient(135deg, #5B5FEF 0%, #7B61FF 100%)", borderRadius: "10px" }}
             >
               Simulate Buy Order
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Modal for Simulated Buy Order */}
+        <StockBuyModal
+          open={Boolean(buyStock)}
+          stock={buyStock}
+          onClose={() => setBuyStock(null)}
+          onOrderPlaced={handleOrderSuccess}
+        />
+
+        {/* Notification Toast */}
+        <Snackbar
+          open={Boolean(snackbarMessage)}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarMessage("")}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert onClose={() => setSnackbarMessage("")} severity="success" sx={{ width: "100%", borderRadius: "12px" }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );

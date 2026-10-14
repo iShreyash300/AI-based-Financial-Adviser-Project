@@ -1,9 +1,16 @@
 import axios from "axios";
 import { loadingManager } from "../context/LoadingContext";
 
+const isLocalhost =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1");
+
 export const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
-  "https://ai-based-financial-adviser-project-v1.onrender.com/api";
+  (isLocalhost
+    ? "http://localhost:5000/api"
+    : "https://ai-based-financial-adviser-project-v1.onrender.com/api");
 
 const api = axios.create({
   baseURL: API_BASE_URL,

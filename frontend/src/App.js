@@ -80,11 +80,7 @@ function App() {
 
             <Route
               path="/"
-              element={
-                <Layout>
-                  <Home />
-                </Layout>
-              }
+              element={<Home />}
             />
 
             {/* LOGIN */}

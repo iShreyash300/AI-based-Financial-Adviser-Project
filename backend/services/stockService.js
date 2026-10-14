@@ -6,12 +6,20 @@
  */
 
 // Configurable provider settings via environment variables
-const STOCK_API_BASE_URL = process.env.STOCK_API_BASE_URL || "https://query1.finance.yahoo.com";
+// Note: query2 is prioritized as it suffers less rate-limiting than query1
+const STOCK_API_BASE_URL = process.env.STOCK_API_BASE_URL || "https://query2.finance.yahoo.com";
 const STOCK_API_COOKIE_URL = process.env.STOCK_API_COOKIE_URL || "https://fc.yahoo.com";
 const STOCK_API_TIMEOUT_MS = parseInt(process.env.STOCK_API_TIMEOUT_MS, 10) || 7000;
 const STOCK_API_CACHE_TTL_MS = parseInt(process.env.STOCK_API_CACHE_TTL_MS, 10) || 60000;
 
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+// Multiple candidate endpoints for automatic failover when 429 rate limit is encountered
+const CANDIDATE_BASE_URLS = Array.from(new Set([
+  STOCK_API_BASE_URL,
+  "https://query2.finance.yahoo.com",
+  "https://query1.finance.yahoo.com",
+]));
+
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
 /**
  * Custom error class for provider communication failures
@@ -25,79 +33,30 @@ class StockServiceError extends Error {
   }
 }
 
-// Popular NSE symbol mappings from 0xramm/Indian-Stock-Market-API
-const NSE_SYMBOLS_CACHE = {
-  "reliance": "RELIANCE",
-  "reliance industries": "RELIANCE",
-  "tcs": "TCS",
-  "tata consultancy": "TCS",
-  "infosys": "INFY",
-  "infy": "INFY",
-  "hdfc bank": "HDFCBANK",
-  "hdfc": "HDFCBANK",
-  "icici bank": "ICICIBANK",
-  "icici": "ICICIBANK",
-  "itc": "ITC",
-  "bharti airtel": "BHARTIARTL",
-  "airtel": "BHARTIARTL",
-  "sbi": "SBIN",
-  "state bank": "SBIN",
-  "state bank of india": "SBIN",
-  "wipro": "WIPRO",
-  "hindustan unilever": "HINDUNILVR",
-  "hul": "HINDUNILVR",
-  "maruti": "MARUTI",
-  "maruti suzuki": "MARUTI",
-  "asian paints": "ASIANPAINT",
-  "bajaj finance": "BAJFINANCE",
-  "titan": "TITAN",
-  "larsen toubro": "LT",
-  "lt": "LT",
-  "l&t": "LT",
-  "ongc": "ONGC",
-  "ntpc": "NTPC",
-  "power grid": "POWERGRID",
-  "coal india": "COALINDIA",
-  "adani": "ADANIENT",
-  "adani enterprises": "ADANIENT",
-  "sun pharma": "SUNPHARMA",
-  "dr reddy": "DRREDDY",
-  "cipla": "CIPLA",
-  "mahindra": "M&M",
-  "m&m": "M&M",
-  "tata motors": "TATAMOTORS",
-};
+// Stock market cache, symbols, and fallback benchmark data imported from S_Data
+const {
+  NSE_SYMBOLS_CACHE,
+  DEFAULT_TOP_SYMBOLS,
+  BENCHMARK_FALLBACK_STOCKS,
+  riskLookup,
+  sectorLookup,
+} = require("../S_Data/stockData");
 
-// Default tracked recommendation symbols for the FinAI Investments UI
-const DEFAULT_TOP_SYMBOLS = [
-  "RELIANCE.NS",
-  "HDFCBANK.NS",
-  "TCS.NS",
-  "INFY.NS",
-  "ICICIBANK.NS",
-  "TATAMOTORS.NS",
-  "SBIN.NS",
-  "BHARTIARTL.NS",
-  "ITC.NS",
-  "BAJFINANCE.NS",
-  "HINDUNILVR.NS",
-  "LT.NS",
-];
-
-// In-memory caches
 let crumbCache = { crumb: null, cookie: null, expiresAt: 0 };
+let inFlightCrumbPromise = null; // Deduplicate concurrent crumb requests to avoid 429
 const quoteCache = new Map(); // key -> { data, expiresAt }
 const detailCache = new Map(); // key -> { data, expiresAt }
 const searchCache = new Map(); // key -> { data, expiresAt }
+const lastKnownQuotes = new Map(); // Persistent fallback store across sessions
 
 // Cache TTL configuration
 const TTL_QUOTES = STOCK_API_CACHE_TTL_MS; // default 60s
 const TTL_DETAILS = 120 * 1000; // 2 minutes
 const TTL_SEARCH = 300 * 1000; // 5 minutes
 
-/**
- * Determine exchange suffix (.NS for NSE, .BO for BSE)
- */
+
+// Determine exchange suffix (.NS for NSE, .BO for BSE)
+
 function determineExchange(symbolInput = "") {
   const symbol = (symbolInput || "").toUpperCase().trim();
   if (symbol.endsWith(".NS")) return [symbol.slice(0, -3), ".NS"];
@@ -105,10 +64,10 @@ function determineExchange(symbolInput = "") {
   return [symbol, ".NS"];
 }
 
-/**
- * Check Indian Stock Market Status (NSE / BSE)
- * Market Trading Hours: Mon-Fri 09:15 to 15:30 IST (UTC+5:30)
- */
+
+//  * Check Indian Stock Market Status (NSE / BSE)
+//  * Market Trading Hours: Mon-Fri 09:15 to 15:30 IST (UTC+5:30)
+
 function getIndianMarketStatus() {
   const now = new Date();
   const istOffset = 5.5 * 60 * 60 * 1000;
@@ -134,79 +93,156 @@ function getIndianMarketStatus() {
   };
 }
 
+
+//  * Perform single-flight crumb retrieval with candidate hosts and backoff
+
+async function fetchCrumbWithFailover(forceRefresh = false) {
+  if (!forceRefresh && crumbCache.crumb && Date.now() < crumbCache.expiresAt) {
+    return crumbCache;
+  }
+
+  let cookie = crumbCache.cookie || "";
+  try {
+    const cookieRes = await fetch(STOCK_API_COOKIE_URL, {
+      headers: {
+        "User-Agent": UA,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      signal: AbortSignal.timeout(STOCK_API_TIMEOUT_MS),
+    });
+    const setCookie = cookieRes.headers.get("set-cookie") || "";
+    const parsedCookie = setCookie.split(";")[0] || "";
+    if (parsedCookie) {
+      cookie = parsedCookie;
+    }
+  } catch (cookieErr) {
+    console.warn("Stock provider cookie retrieval notice:", cookieErr.message);
+  }
+
+  let lastError = null;
+  for (let i = 0; i < CANDIDATE_BASE_URLS.length; i++) {
+    const host = CANDIDATE_BASE_URLS[i];
+    try {
+      const crumbRes = await fetch(`${host}/v1/test/getcrumb`, {
+        headers: {
+          "User-Agent": UA,
+          Cookie: cookie,
+          "Accept": "text/plain, */*",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+        signal: AbortSignal.timeout(STOCK_API_TIMEOUT_MS),
+      });
+
+      if (crumbRes.status === 429) {
+        lastError = new StockServiceError("Stock market provider rate limited: HTTP 429", 429);
+        console.warn(`Host ${host} throttled crumb (HTTP 429). Retrying alternate endpoint...`);
+        // Jittered backoff before trying alternate host
+        await new Promise((r) => setTimeout(r, 400 + Math.random() * 300));
+        continue;
+      }
+
+      if (!crumbRes.ok) {
+        lastError = new StockServiceError(`Failed to fetch crumb from provider: HTTP ${crumbRes.status}`, 502);
+        continue;
+      }
+
+      const crumb = (await crumbRes.text()).trim();
+      if (!crumb) {
+        lastError = new StockServiceError("Received empty authentication crumb from provider", 502);
+        continue;
+      }
+
+      crumbCache = {
+        crumb,
+        cookie,
+        expiresAt: Date.now() + 4 * 60 * 60 * 1000, // Valid for 4 hours
+      };
+      return crumbCache;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  // Graceful fallback: If an existing crumb is present, extend and reuse it instead of crashing
+  if (crumbCache.crumb) {
+    console.warn("Upstream crumb refresh throttled; continuing with existing cached session crumb.");
+    crumbCache.expiresAt = Date.now() + 15 * 60 * 1000;
+    return crumbCache;
+  }
+
+  if (lastError instanceof StockServiceError) throw lastError;
+  throw new StockServiceError(`Stock market provider unreachable: ${lastError?.message || "Rate limited"}`, 503, {
+    originalError: lastError?.message,
+  });
+}
+
 /**
- * Obtain Yahoo Finance cookie and crumb
+ * Obtain Yahoo Finance cookie and crumb with deduplicated in-flight requests
  */
 async function getCrumb(forceRefresh = false) {
   if (!forceRefresh && crumbCache.crumb && Date.now() < crumbCache.expiresAt) {
     return crumbCache;
   }
 
-  try {
-    const cookieRes = await fetch(STOCK_API_COOKIE_URL, {
-      headers: { "User-Agent": UA },
-      signal: AbortSignal.timeout(STOCK_API_TIMEOUT_MS),
-    });
-    const setCookie = cookieRes.headers.get("set-cookie") || "";
-    const cookie = setCookie.split(";")[0] || "";
-
-    const crumbRes = await fetch(`${STOCK_API_BASE_URL}/v1/test/getcrumb`, {
-      headers: { "User-Agent": UA, Cookie: cookie },
-      signal: AbortSignal.timeout(STOCK_API_TIMEOUT_MS),
-    });
-
-    if (!crumbRes.ok) {
-      throw new StockServiceError(`Failed to fetch crumb from provider: HTTP ${crumbRes.status}`, 502);
-    }
-
-    const crumb = (await crumbRes.text()).trim();
-    if (!crumb) {
-      throw new StockServiceError("Received empty authentication crumb from provider", 502);
-    }
-
-    crumbCache = {
-      crumb,
-      cookie,
-      expiresAt: Date.now() + 50 * 60 * 1000, // 50 mins
-    };
-    return crumbCache;
-  } catch (err) {
-    if (crumbCache.crumb) {
-      return crumbCache;
-    }
-    if (err instanceof StockServiceError) throw err;
-    throw new StockServiceError(`Stock market provider unreachable: ${err.message}`, 503, { originalError: err.message });
+  if (inFlightCrumbPromise) {
+    return inFlightCrumbPromise;
   }
+
+  inFlightCrumbPromise = (async () => {
+    try {
+      return await fetchCrumbWithFailover(forceRefresh);
+    } finally {
+      inFlightCrumbPromise = null;
+    }
+  })();
+
+  return inFlightCrumbPromise;
 }
 
 /**
- * Fetch authenticated Yahoo Finance endpoint with retry on 401
+ * Fetch authenticated Yahoo Finance endpoint with retry on 401/429 and multi-host failover
  */
 async function yahooFetchAuthed(buildUrl) {
   let { crumb, cookie } = await getCrumb();
-  let res;
-  try {
-    res = await fetch(buildUrl(crumb), {
-      headers: { "User-Agent": UA, Cookie: cookie },
-      signal: AbortSignal.timeout(STOCK_API_TIMEOUT_MS),
-    });
-  } catch (err) {
-    throw new StockServiceError(`Provider network/timeout error: ${err.message}`, 504, { originalError: err.message });
-  }
+  let lastRes = null;
+  let lastErr = null;
 
-  if (res.status === 401) {
-    ({ crumb, cookie } = await getCrumb(true));
+  for (let i = 0; i < CANDIDATE_BASE_URLS.length; i++) {
+    const host = CANDIDATE_BASE_URLS[i];
     try {
-      res = await fetch(buildUrl(crumb), {
-        headers: { "User-Agent": UA, Cookie: cookie },
+      const targetUrl = typeof buildUrl === "function" ? buildUrl(crumb, host) : buildUrl;
+      let res = await fetch(targetUrl, {
+        headers: { "User-Agent": UA, Cookie: cookie, "Accept": "*/*" },
         signal: AbortSignal.timeout(STOCK_API_TIMEOUT_MS),
       });
+
+      if (res.status === 401) {
+        ({ crumb, cookie } = await getCrumb(true));
+        const retryUrl = typeof buildUrl === "function" ? buildUrl(crumb, host) : buildUrl;
+        res = await fetch(retryUrl, {
+          headers: { "User-Agent": UA, Cookie: cookie, "Accept": "*/*" },
+          signal: AbortSignal.timeout(STOCK_API_TIMEOUT_MS),
+        });
+      }
+
+      if (res.status === 429) {
+        console.warn(`Host ${host} returned 429 for quote. Trying alternate endpoint...`);
+        lastRes = res;
+        await new Promise((r) => setTimeout(r, 400));
+        continue;
+      }
+
+      return res;
     } catch (err) {
-      throw new StockServiceError(`Provider network/timeout error on retry: ${err.message}`, 504, { originalError: err.message });
+      lastErr = err;
     }
   }
 
-  return res;
+  if (lastRes) return lastRes;
+  throw new StockServiceError(`Provider network/timeout error: ${lastErr?.message || "Connection failed"}`, 504, {
+    originalError: lastErr?.message,
+  });
 }
 
 const rawVal = (field) => (field && typeof field === "object" ? field.raw ?? null : field ?? null);
@@ -232,8 +268,8 @@ async function getQuoteBatch(tickerSymbols) {
   }
 
   try {
-    const res = await yahooFetchAuthed((crumb) =>
-      `${STOCK_API_BASE_URL}/v7/finance/quote?symbols=${encodeURIComponent(tickerSymbols.join(","))}&crumb=${encodeURIComponent(crumb)}`
+    const res = await yahooFetchAuthed((crumb, host = STOCK_API_BASE_URL) =>
+      `${host}/v7/finance/quote?symbols=${encodeURIComponent(tickerSymbols.join(","))}&crumb=${encodeURIComponent(crumb)}`
     );
 
     if (!res.ok) {
@@ -256,7 +292,7 @@ async function getQuoteBatch(tickerSymbols) {
       const percentChange = q.regularMarketChangePercent ?? null;
       const isPositive = change !== null ? change >= 0 : true;
 
-      byTicker[q.symbol] = {
+      const formatted = {
         symbol: q.symbol,
         companyName: q.longName || q.shortName || q.symbol,
         lastPrice: price,
@@ -274,12 +310,32 @@ async function getQuoteBatch(tickerSymbols) {
         currency: q.currency || "INR",
         lastUpdated: q.regularMarketTime ? new Date(q.regularMarketTime * 1000).toISOString() : new Date().toISOString(),
       };
+
+      byTicker[q.symbol] = formatted;
+      lastKnownQuotes.set(q.symbol, formatted);
     }
 
     quoteCache.set(cacheKey, { data: byTicker, expiresAt: Date.now() + TTL_QUOTES });
     return byTicker;
   } catch (err) {
     if (cached) return cached.data;
+
+    // Resilient fallback: Return last known or benchmark prices if rate-limited
+    const fallbackResults = {};
+    let foundFallback = false;
+    for (const sym of tickerSymbols) {
+      if (lastKnownQuotes.has(sym)) {
+        fallbackResults[sym] = lastKnownQuotes.get(sym);
+        foundFallback = true;
+      } else if (BENCHMARK_FALLBACK_STOCKS[sym]) {
+        fallbackResults[sym] = BENCHMARK_FALLBACK_STOCKS[sym];
+        foundFallback = true;
+      }
+    }
+    if (foundFallback) {
+      return fallbackResults;
+    }
+
     if (err instanceof StockServiceError) throw err;
     throw new StockServiceError(`Failed to fetch stock batch quotes: ${err.message}`, 503);
   }
@@ -299,8 +355,8 @@ async function getStockDetail(tickerSymbol) {
 
   const modules = "price,summaryDetail,defaultKeyStatistics,assetProfile";
   try {
-    const res = await yahooFetchAuthed((crumb) =>
-      `${STOCK_API_BASE_URL}/v10/finance/quoteSummary/${encodeURIComponent(fullTicker)}?modules=${modules}&crumb=${encodeURIComponent(crumb)}`
+    const res = await yahooFetchAuthed((crumb, host = STOCK_API_BASE_URL) =>
+      `${host}/v10/finance/quoteSummary/${encodeURIComponent(fullTicker)}?modules=${modules}&crumb=${encodeURIComponent(crumb)}`
     );
 
     if (!res.ok) {
@@ -439,37 +495,31 @@ async function searchStocks(query = "") {
  */
 async function getStockRecommendations() {
   const marketStatus = getIndianMarketStatus();
-  const quotes = await getQuoteBatch(DEFAULT_TOP_SYMBOLS);
+  let quotes = {};
+  let isRateLimited = false;
 
-  const riskLookup = {
-    "RELIANCE.NS": "Medium Risk",
-    "HDFCBANK.NS": "Medium Risk",
-    "TCS.NS": "Medium Risk",
-    "INFY.NS": "Low - Medium Risk",
-    "ICICIBANK.NS": "Medium Risk",
-    "TATAMOTORS.NS": "High Risk",
-    "SBIN.NS": "Medium Risk",
-    "BHARTIARTL.NS": "Medium Risk",
-    "ITC.NS": "Low - Medium Risk",
-    "BAJFINANCE.NS": "Medium - High Risk",
-    "HINDUNILVR.NS": "Low Risk",
-    "LT.NS": "Medium Risk",
-  };
+  try {
+    quotes = await getQuoteBatch(DEFAULT_TOP_SYMBOLS);
+  } catch (err) {
+    console.warn("Stock recommendations live fetch notice:", err.message);
+    isRateLimited = true;
+    quotes = {};
+    for (const sym of DEFAULT_TOP_SYMBOLS) {
+      quotes[sym] = lastKnownQuotes.get(sym) || BENCHMARK_FALLBACK_STOCKS[sym] || null;
+    }
+  }
 
-  const sectorLookup = {
-    "RELIANCE.NS": "Conglomerate / Energy",
-    "HDFCBANK.NS": "Banking & Finance",
-    "TCS.NS": "IT Services",
-    "INFY.NS": "IT Services",
-    "ICICIBANK.NS": "Banking & Finance",
-    "TATAMOTORS.NS": "Automotive",
-    "SBIN.NS": "Public Sector Banking",
-    "BHARTIARTL.NS": "Telecom",
-    "ITC.NS": "FMCG / Conglomerate",
-    "BAJFINANCE.NS": "Financial Services (NBFC)",
-    "HINDUNILVR.NS": "Consumer Goods (FMCG)",
-    "LT.NS": "Infrastructure / Engineering",
-  };
+  // Ensure default benchmark stocks are populated even if upstream omits them
+  for (const sym of DEFAULT_TOP_SYMBOLS) {
+    if (!quotes[sym]) {
+      quotes[sym] = lastKnownQuotes.get(sym) || BENCHMARK_FALLBACK_STOCKS[sym] || null;
+      if (BENCHMARK_FALLBACK_STOCKS[sym]) {
+        isRateLimited = true;
+      }
+    }
+  }
+
+
 
   const stocks = DEFAULT_TOP_SYMBOLS.map((symbol) => {
     const q = quotes[symbol];
@@ -494,7 +544,7 @@ async function getStockRecommendations() {
         marketCap: q.marketCapFormatted,
         peRatio: q.peRatio,
         yearReturn,
-        lastUpdated: q.lastUpdated,
+        lastUpdated: q.lastUpdated || new Date().toISOString(),
       };
     }
 
@@ -519,9 +569,12 @@ async function getStockRecommendations() {
   return {
     stocks,
     marketStatus: marketStatus.isOpen ? "OPEN" : "CLOSED",
-    marketMessage: marketStatus.statusText,
-    dataDelayNotice: marketStatus.dataDelayNotice,
+    marketMessage: isRateLimited ? "Market Closed / Delayed Session" : marketStatus.statusText,
+    dataDelayNotice: isRateLimited
+      ? "Upstream market data feed is busy (HTTP 429). Displaying benchmark closing session data."
+      : marketStatus.dataDelayNotice,
     timestamp: new Date().toISOString(),
+    isRateLimited,
   };
 }
 
@@ -561,6 +614,7 @@ function clearCache() {
   quoteCache.clear();
   detailCache.clear();
   searchCache.clear();
+  lastKnownQuotes.clear();
 }
 
 module.exports = {
