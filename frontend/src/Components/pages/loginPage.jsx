@@ -16,8 +16,8 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState("");
-  const [infoNotice, setInfoNotice] = useState("");
+  // const [success, setSuccess] = useState("");
+  // const [infoNotice, setInfoNotice] = useState("");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -84,8 +84,8 @@ const LoginPage = () => {
     if (!validateForm()) return;
 
     setLoading(true);
-    setSuccess("");
-    setInfoNotice("");
+    // setSuccess("");
+    // setInfoNotice("");
 
     try {
       const response = await api.post("/auth/login", {
@@ -112,14 +112,14 @@ const LoginPage = () => {
         })
       );
 
-      setSuccess("Authentication successful. Redirecting to cockpit...");
+      // setSuccess("Authentication successful. Redirecting to cockpit...");
       setErrors({});
 
       setTimeout(() => {
         navigate("/dashboard");
       }, 900);
     } catch (error) {
-      setSuccess("");
+      // setSuccess(""); 
       setErrors({
         auth:
           error.response?.data?.message ||
@@ -130,11 +130,11 @@ const LoginPage = () => {
     }
   };
 
-  const handleSsoClick = (provider) => {
-    setInfoNotice(
-      `${provider} integration is enabled for Enterprise SSO. Please use work email credentials for direct demo access.`
-    );
-  };
+  // const handleSsoClick = (provider) => {
+  //   setInfoNotice(
+  //     `${provider} integration is enabled for Enterprise SSO. Please use work email credentials for direct demo access.`
+  //   );
+  // };
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col lg:flex-row antialiased selection:bg-[#d1fae5] selection:text-[#065f46]">
