@@ -9,10 +9,6 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import ErrorOutlinedIcon from "@mui/icons-material/ErrorOutlined";
-import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 const LoginPage = () => {

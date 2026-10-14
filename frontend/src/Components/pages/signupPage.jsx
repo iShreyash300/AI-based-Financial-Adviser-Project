@@ -8,7 +8,6 @@ import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ErrorOutlinedIcon from "@mui/icons-material/ErrorOutlined";
 import PublishedWithChangesOutlinedIcon from "@mui/icons-material/PublishedWithChangesOutlined";
@@ -163,11 +162,11 @@ const SignupPage = () => {
         }
     };
 
-    const handleSsoClick = (provider) => {
-        setInfoNotice(
-            `${provider} registration is enabled for Enterprise workspaces. Use the work email form below for direct instant access.`
-        );
-    };
+    // const handleSsoClick = (provider) => {
+    //     setInfoNotice(
+    //         `${provider} registration is enabled for Enterprise workspaces. Use the work email form below for direct instant access.`
+    //     );
+    // };
 
     return (
         <div className="min-h-screen w-full bg-[#f0f8f3] flex flex-col lg:flex-row antialiased selection:bg-[#d1fae5] selection:text-[#065f46]">

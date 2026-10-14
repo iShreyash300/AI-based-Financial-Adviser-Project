@@ -10,8 +10,6 @@ import {
   Divider,
 } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-// import StarOutlineIcon from "@mui/icons-material/StarOutline";
-import StarBorderIcon from "@mui/icons-material/StarBorder";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import { useNavigate } from "react-router-dom";

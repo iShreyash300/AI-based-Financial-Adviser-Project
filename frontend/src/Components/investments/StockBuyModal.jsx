@@ -31,7 +31,7 @@ const formatCurrency = (val) => {
 
 const StockBuyModal = ({ open, stock, onClose, onOrderPlaced }) => {
   const [quantity, setQuantity] = useState(1);
-  const [orderType, setOrderType] = useState("MARKET");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -65,7 +65,7 @@ const StockBuyModal = ({ open, stock, onClose, onOrderPlaced }) => {
         quantity,
         price: currentPrice,
         totalAmount,
-        orderType,
+        // orderType,
         orderDate: new Date().toISOString(),
       };
 
